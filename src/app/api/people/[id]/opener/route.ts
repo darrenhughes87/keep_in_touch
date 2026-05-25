@@ -9,8 +9,9 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   const p = getPerson(parseInt(id, 10));
   if (!p) return NextResponse.json({ error: 'not found' }, { status: 404 });
   const ln = latestNote(p.id);
+  const ageDays = ln ? Math.floor((Date.now() - new Date(ln.created_at).getTime()) / 86_400_000) : null;
   try {
-    const opener = await suggestOpener(p.name, ln?.body ?? null);
+    const opener = await suggestOpener(p.name, ln?.body ?? null, ageDays);
     return NextResponse.json({ opener });
   } catch (err: any) {
     return NextResponse.json({ opener: `Drop ${p.name.split(' ')[0]} a line and ask how things are.` });

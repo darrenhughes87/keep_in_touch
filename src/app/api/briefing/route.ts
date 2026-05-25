@@ -14,11 +14,13 @@ export async function GET() {
     const lc = lastContact(s.person_id);
     const ds = lc ? Math.floor((Date.now() - new Date(lc).getTime()) / 86_400_000) : null;
     const ln = latestNote(s.person_id);
+    const noteAge = ln ? Math.floor((Date.now() - new Date(ln.created_at).getTime()) / 86_400_000) : null;
     return {
       name: p.name.split(' ')[0],
       days_since: ds,
       cadence: p.cadence_days,
       latest_note: ln?.body ?? null,
+      latest_note_age_days: noteAge,
       layer: p.layer,
     };
   }).filter(Boolean) as any[];

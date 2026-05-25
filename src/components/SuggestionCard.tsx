@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { Person, Note } from '@/lib/types';
 import { PersonAvatar } from './PersonAvatar';
 import { ContactButtons } from './ContactButtons';
+import { humanDaysAgo } from '@/lib/time';
 import { useState } from 'react';
 
 interface Props {
@@ -49,7 +50,9 @@ export function SuggestionCard({ suggestionId, person, daysSince, latestNote, co
       <p className="text-sm text-[var(--color-ink-soft)]">{cadenceLine}</p>
       {latestNote && (
         <p className="text-sm bg-[var(--color-bg)] rounded-xl px-3 py-2 border border-[var(--color-line)]">
-          <span className="text-[var(--color-ink-faint)]">Last time: </span>
+          <span className="text-[var(--color-ink-faint)]">
+            Last time ({humanDaysAgo(latestNote.created_at)}):{' '}
+          </span>
           {latestNote.body}
         </p>
       )}
