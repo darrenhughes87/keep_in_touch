@@ -1,0 +1,46 @@
+name: Build + push container image
+
+# Builds a multi-arch (amd64 + arm64) container image and pushes it to GitHub
+# Container Registry. The image is published at:
+#   ghcr.io/<owner>/<repo>:latest
+#   ghcr.io/<owner>/<repo>:<commit-sha>
+#
+# To use a different registry, edit the docker/login-action + tags below.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute image name (lowercased)
+        run: echo "IMG=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.IMG }}:latest
+            ${{ env.IMG }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

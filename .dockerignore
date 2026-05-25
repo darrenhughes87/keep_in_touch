@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+.env*
+!.env.example
+data
+backups
+*.log
+.DS_Store
+HOW-TO.md
+PLAN.md
+README.md
+.claude

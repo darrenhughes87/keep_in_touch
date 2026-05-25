@@ -1,0 +1,52 @@
+# Keep In Touch — production compose stack
+#
+# Replace IMAGE below with whichever image you build/pull.
+#
+# - If you use the included GitHub Actions workflow, your image is at:
+#     ghcr.io/<your-github-username>/<repo-name>:latest
+# - If you build locally on the host (e.g. directly on a Raspberry Pi):
+#     keep_in_touch:local
+
+services:
+  kit-web:
+    image: ${IMAGE:-keep_in_touch:local}
+    container_name: kit-web
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      PORT: 3100
+      HOSTNAME: 0.0.0.0
+      DATA_DIR: /data
+      TZ: ${TZ:-UTC}
+    volumes:
+      - kit_data:/data
+    ports:
+      - "3100:3100"
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3100/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  kit-cron:
+    image: alpine:3.20
+    container_name: kit-cron
+    restart: unless-stopped
+    depends_on:
+      kit-web:
+        condition: service_started
+    env_file: .env
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        apk add --no-cache curl tzdata >/dev/null 2>&1 || true
+        cat > /etc/crontabs/root <<EOF
+        30 6 * * * curl -sS -X POST -H "Authorization: Bearer $$CRON_SECRET" http://kit-web:3100/api/cron/compute-suggestions >> /var/log/cron.log 2>&1
+        EOF
+        crond -f -l 2
+
+volumes:
+  kit_data:
