@@ -45,6 +45,7 @@ services:
         apk add --no-cache curl tzdata >/dev/null 2>&1 || true
         cat > /etc/crontabs/root <<EOF
         30 6 * * * curl -sS -X POST -H "Authorization: Bearer $$CRON_SECRET" http://kit-web:3100/api/cron/compute-suggestions >> /var/log/cron.log 2>&1
+        30 8 * * * curl -sS -X POST -H "Authorization: Bearer $$CRON_SECRET" http://kit-web:3100/api/cron/morning-push >> /var/log/cron.log 2>&1
         EOF
         crond -f -l 2
 

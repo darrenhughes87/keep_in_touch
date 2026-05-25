@@ -4,6 +4,7 @@ import { getSettings, updateSettings } from '@/lib/queries';
 import { revalidatePath } from 'next/cache';
 import Link from 'next/link';
 import { haveAnthropicKey } from '@/lib/anthropic';
+import { NotificationToggle } from '@/components/NotificationToggle';
 
 export default async function SettingsPage() {
   await requireSession();
@@ -60,6 +61,10 @@ export default async function SettingsPage() {
               <Field label="Good" name="cadence_good" defaultValue={String(s.cadence_good)} type="number" />
               <Field label="Acquaintance" name="cadence_acquaintance" defaultValue={String(s.cadence_acquaintance)} type="number" />
             </div>
+          </Section>
+
+          <Section title="Morning push (optional)">
+            <NotificationToggle />
           </Section>
 
           <Section title="Moments (optional)">
