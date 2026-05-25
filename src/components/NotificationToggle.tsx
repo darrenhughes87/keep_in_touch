@@ -2,7 +2,17 @@
 
 import { useEffect, useState } from 'react';
 
-type State = 'loading' | 'unavailable' | 'denied' | 'off' | 'on' | 'busy';
+type State = 'loading' | 'unavailable' | 'denied' | 'no-sw' | 'off' | 'on' | 'busy';
+
+// 5s ceiling on the SW-ready wait so the UI never hangs forever if the
+// worker silently failed to register (happens on some Android Chrome PWA
+// re-installs, with TLS-terminating proxies, or non-standard ports).
+function readyWithTimeout(): Promise<ServiceWorkerRegistration | null> {
+  return Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise<null>(resolve => setTimeout(() => resolve(null), 5000)),
+  ]) as Promise<ServiceWorkerRegistration | null>;
+}
 
 export function NotificationToggle() {
   const [state, setState] = useState<State>('loading');
@@ -26,9 +36,40 @@ export function NotificationToggle() {
       setState('denied');
       return;
     }
-    const reg = await navigator.serviceWorker.ready;
+
+    // Is there ANY registration at all? If not, the SW never installed —
+    // surface a button to install it now rather than hanging on `ready`.
+    const existing = await navigator.serviceWorker.getRegistration();
+    if (!existing) {
+      setState('no-sw');
+      return;
+    }
+
+    const reg = await readyWithTimeout();
+    if (!reg) {
+      setState('no-sw');
+      return;
+    }
     const sub = await reg.pushManager.getSubscription();
     setState(sub ? 'on' : 'off');
+  }
+
+  async function installSw() {
+    setState('busy');
+    try {
+      await navigator.serviceWorker.register('/sw.js');
+      // Wait for it to actually activate (also with timeout)
+      const reg = await readyWithTimeout();
+      if (!reg) {
+        setState('no-sw');
+        return;
+      }
+      const sub = await reg.pushManager.getSubscription();
+      setState(sub ? 'on' : 'off');
+    } catch (err) {
+      console.error('SW install failed', err);
+      setState('no-sw');
+    }
   }
 
   async function enable() {
@@ -87,6 +128,22 @@ export function NotificationToggle() {
       <p className="text-xs text-[var(--color-ink-faint)]">
         Notifications are blocked in your browser settings. Allow them for this site to enable.
       </p>
+    );
+  }
+  if (state === 'no-sw') {
+    return (
+      <div className="space-y-2">
+        <p className="text-xs text-[var(--color-ink-faint)]">
+          Background service isn't running yet. Tap below to install, then turn on push.
+        </p>
+        <button
+          type="button"
+          onClick={installSw}
+          className="px-3 py-1.5 rounded-full text-xs font-medium bg-stone-100 text-[var(--color-ink-soft)]"
+        >
+          Install background service
+        </button>
+      </div>
     );
   }
 
