@@ -26,6 +26,9 @@ export function getDb(): Database.Database {
     "ALTER TABLE people   ADD COLUMN starred              INTEGER NOT NULL DEFAULT 0",
     "ALTER TABLE people   ADD COLUMN star_checked_at      TEXT",
     "CREATE INDEX IF NOT EXISTS idx_people_starred ON people(starred)",
+    // Backfill moments_fts on existing DBs: the FTS table + triggers were
+    // added later, so historical moments need re-indexing once.
+    "INSERT INTO moments_fts(rowid, body) SELECT id, body FROM moments WHERE id NOT IN (SELECT rowid FROM moments_fts)",
   ];
   for (const sql of adds) {
     try { db.exec(sql); } catch (e: any) {

@@ -83,6 +83,19 @@ CREATE TABLE IF NOT EXISTS moments (
 );
 CREATE INDEX IF NOT EXISTS idx_moments_date ON moments(created_at);
 
+CREATE VIRTUAL TABLE IF NOT EXISTS moments_fts USING fts5(body, content='moments', content_rowid='id');
+
+CREATE TRIGGER IF NOT EXISTS moments_ai AFTER INSERT ON moments BEGIN
+  INSERT INTO moments_fts(rowid, body) VALUES (new.id, new.body);
+END;
+CREATE TRIGGER IF NOT EXISTS moments_ad AFTER DELETE ON moments BEGIN
+  INSERT INTO moments_fts(moments_fts, rowid, body) VALUES('delete', old.id, old.body);
+END;
+CREATE TRIGGER IF NOT EXISTS moments_au AFTER UPDATE ON moments BEGIN
+  INSERT INTO moments_fts(moments_fts, rowid, body) VALUES('delete', old.id, old.body);
+  INSERT INTO moments_fts(rowid, body) VALUES (new.id, new.body);
+END;
+
 CREATE TABLE IF NOT EXISTS settings (
   id                       INTEGER PRIMARY KEY CHECK (id = 1),
   greeting_tone            TEXT NOT NULL DEFAULT 'warm',

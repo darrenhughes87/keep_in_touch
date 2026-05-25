@@ -56,18 +56,44 @@ export function NotificationToggle() {
 
   async function installSw() {
     setState('busy');
+    setReason(null);
     try {
-      await navigator.serviceWorker.register('/sw.js');
-      // Wait for it to actually activate (also with timeout)
-      const reg = await readyWithTimeout();
-      if (!reg) {
+      // First, sanity-check that the sw.js file is actually served.
+      const probe = await fetch('/sw.js', { cache: 'no-store' });
+      if (!probe.ok) {
+        setReason(`The service worker file isn't reachable (HTTP ${probe.status}). Check your reverse proxy / Tailscale Serve config.`);
         setState('no-sw');
         return;
       }
-      const sub = await reg.pushManager.getSubscription();
+      const ct = probe.headers.get('content-type') || '';
+      if (!/javascript/i.test(ct)) {
+        setReason(`sw.js is being served with the wrong Content-Type (got "${ct}", expected JavaScript).`);
+        setState('no-sw');
+        return;
+      }
+
+      const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+      // Wait for activation. ready resolves only once SOME registration is active.
+      // We also explicitly wait for our specific registration to reach 'activated'.
+      if (reg.installing) {
+        await new Promise<void>(resolve => {
+          const w = reg.installing!;
+          w.addEventListener('statechange', () => {
+            if (w.state === 'activated' || w.state === 'redundant') resolve();
+          });
+        });
+      }
+      const ready = await readyWithTimeout();
+      if (!ready) {
+        setReason('Service worker registered but never activated within 5 seconds. Try reloading the page.');
+        setState('no-sw');
+        return;
+      }
+      const sub = await ready.pushManager.getSubscription();
       setState(sub ? 'on' : 'off');
-    } catch (err) {
+    } catch (err: any) {
       console.error('SW install failed', err);
+      setReason(`Install failed: ${err?.message ?? String(err)}`);
       setState('no-sw');
     }
   }
@@ -134,14 +160,14 @@ export function NotificationToggle() {
     return (
       <div className="space-y-2">
         <p className="text-xs text-[var(--color-ink-faint)]">
-          Background service isn't running yet. Tap below to install, then turn on push.
+          {reason ?? "Background service isn't running yet. Tap below to install, then turn on push."}
         </p>
         <button
           type="button"
           onClick={installSw}
           className="px-3 py-1.5 rounded-full text-xs font-medium bg-stone-100 text-[var(--color-ink-soft)]"
         >
-          Install background service
+          {reason ? 'Try again' : 'Install background service'}
         </button>
       </div>
     );

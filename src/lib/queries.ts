@@ -142,8 +142,16 @@ export function snoozePerson(id: number, untilIso: string) {
 }
 
 export function setStar(id: number, starred: boolean) {
+  const db = getDb();
   const checked = starred ? new Date().toISOString() : null;
-  getDb().prepare(`UPDATE people SET starred = ?, star_checked_at = ? WHERE id = ?`).run(starred ? 1 : 0, checked, id);
+  db.prepare(`UPDATE people SET starred = ?, star_checked_at = ? WHERE id = ?`).run(starred ? 1 : 0, checked, id);
+  // If we just starred someone, also remove them from any already-computed
+  // daily suggestions so they disappear from today's home screen immediately.
+  // (daily_suggestions is computed once a day, so starring after the morning
+  //  compute would otherwise leave a stale card up until tomorrow.)
+  if (starred) {
+    db.prepare(`DELETE FROM daily_suggestions WHERE person_id = ?`).run(id);
+  }
 }
 
 export function confirmStar(id: number) {
@@ -196,6 +204,17 @@ export function searchNotes(q: string): Array<Note & { person_name: string }> {
     LIMIT 50
   `).all(q + '*') as Array<Note & { person_name: string }>;
   return rows;
+}
+
+export function searchMoments(q: string): Moment[] {
+  return getDb().prepare(`
+    SELECT m.*
+    FROM moments_fts f
+    JOIN moments m ON m.id = f.rowid
+    WHERE moments_fts MATCH ?
+    ORDER BY m.created_at DESC
+    LIMIT 50
+  `).all(q + '*') as Moment[];
 }
 
 // Interactions
@@ -262,10 +281,18 @@ export function computeSuggestionsFor(forDate: string): DailySuggestion[] {
 }
 
 export function getSuggestions(forDate: string): DailySuggestion[] {
+  // Belt-and-braces: also filter out any whose person became starred after
+  // the daily compute (setStar already deletes them, but a manual SQL edit
+  // or older row could slip through).
   return getDb().prepare(`
-    SELECT * FROM daily_suggestions
-    WHERE for_date = ? AND dismissed_at IS NULL AND acted_at IS NULL
-    ORDER BY rank ASC
+    SELECT s.* FROM daily_suggestions s
+    JOIN people p ON p.id = s.person_id
+    WHERE s.for_date = ?
+      AND s.dismissed_at IS NULL
+      AND s.acted_at IS NULL
+      AND p.archived_at IS NULL
+      AND p.starred = 0
+    ORDER BY s.rank ASC
   `).all(forDate) as DailySuggestion[];
 }
 

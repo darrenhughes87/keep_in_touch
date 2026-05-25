@@ -1,6 +1,6 @@
 import { requireSession } from '@/lib/auth';
 import { TopNav } from '@/components/TopNav';
-import { searchNotes, listPeople } from '@/lib/queries';
+import { searchNotes, searchMoments, listPeople } from '@/lib/queries';
 import { humanDaysAgo } from '@/lib/time';
 import Link from 'next/link';
 import { PersonAvatar } from '@/components/PersonAvatar';
@@ -11,11 +11,11 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const q = (sp.q ?? '').trim();
 
   let notes: Awaited<ReturnType<typeof searchNotes>> = [];
+  let moments: Awaited<ReturnType<typeof searchMoments>> = [];
   let people: ReturnType<typeof listPeople> = [];
   if (q) {
-    try {
-      notes = searchNotes(q);
-    } catch { /* malformed FTS query, ignore */ }
+    try { notes = searchNotes(q); } catch { /* malformed FTS query */ }
+    try { moments = searchMoments(q); } catch { /* malformed FTS query */ }
     people = listPeople({ search: q });
   }
 
@@ -61,7 +61,21 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
               </section>
             )}
 
-            {people.length === 0 && notes.length === 0 && (
+            {moments.length > 0 && (
+              <section className="mt-6">
+                <h2 className="text-xs uppercase tracking-wider text-[var(--color-ink-faint)] mb-2">Moments</h2>
+                <ul className="space-y-2">
+                  {moments.map(m => (
+                    <li key={m.id} className="bg-[var(--color-warm-soft)] rounded-xl px-3 py-2 text-sm">
+                      <p>{m.body}</p>
+                      <p className="text-xs text-[var(--color-ink-faint)] mt-1">{humanDaysAgo(m.created_at)}</p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {people.length === 0 && notes.length === 0 && moments.length === 0 && (
               <p className="text-sm text-[var(--color-ink-faint)] mt-8 text-center">Nothing matches.</p>
             )}
           </>
