@@ -1,20 +1,33 @@
 // Keep In Touch — minimal service worker.
-// Strategy: network-first for navigation, cache-first for static assets.
-// Push handler: shows a soft notification (no name, generic body) — tap opens /.
+// v2 — only cache files that actually exist, and don't let a missing
+// file kill the entire install (which previously stranded the worker
+// in 'installing' forever).
 
-const CACHE = 'kit-v1';
-const STATIC = ['/manifest.webmanifest', '/icon-192.png', '/icon-512.png'];
+const CACHE = 'kit-v2';
+const STATIC = ['/manifest.webmanifest', '/icon.svg'];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then(c => c.addAll(STATIC)));
-  self.skipWaiting();
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    // Cache each file individually; one missing file no longer fails install.
+    await Promise.all(STATIC.map(async (url) => {
+      try {
+        const res = await fetch(url, { cache: 'no-cache' });
+        if (res.ok) await cache.put(url, res);
+      } catch (err) {
+        // Swallow — the SW must still install and activate.
+      }
+    }));
+    self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-  );
-  self.clients.claim();
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)));
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener('fetch', (event) => {
@@ -43,8 +56,8 @@ self.addEventListener('push', (event) => {
   }
   event.waitUntil(self.registration.showNotification(title, {
     body,
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
+    icon: '/icon.svg',
+    badge: '/icon.svg',
     tag: 'kit-daily',
   }));
 });
