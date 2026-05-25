@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { PersonAvatar } from '@/components/PersonAvatar';
 import { PhotoUploader } from '@/components/PhotoUploader';
 import { LayerPill } from '@/components/LayerPill';
+import { LayerPicker } from '@/components/LayerPicker';
 import { ContactButtons } from '@/components/ContactButtons';
 import { NoteSection } from '@/components/NoteSection';
 import { OpenerButton } from '@/components/OpenerButton';
@@ -38,6 +39,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
               <LayerPill layer={person.layer} />
               <span className="text-xs text-[var(--color-ink-faint)]">every ~{person.cadence_days}d</span>
             </div>
+            <LayerPicker personId={person.id} current={person.layer} />
           </div>
         </div>
 

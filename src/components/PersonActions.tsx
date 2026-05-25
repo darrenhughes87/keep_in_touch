@@ -22,6 +22,13 @@ export function PersonActions({ person }: { person: Person }) {
     router.push('/people');
   }
 
+  async function deleteForever() {
+    if (!confirm(`Delete ${person.name} forever, including every note and interaction? This cannot be undone.`)) return;
+    if (!confirm(`Really delete ${person.name}? Last chance.`)) return;
+    await fetch(`/api/people/${person.id}/delete`, { method: 'POST' });
+    router.push('/people');
+  }
+
   async function logChat() {
     await fetch(`/api/people/${person.id}/interactions`, {
       method: 'POST',
@@ -47,6 +54,9 @@ export function PersonActions({ person }: { person: Person }) {
       </button>
       <button onClick={archive} className="px-3 py-1.5 rounded-full text-[var(--color-ink-faint)] ml-auto">
         Archive
+      </button>
+      <button onClick={deleteForever} className="px-3 py-1.5 rounded-full text-red-600">
+        Delete
       </button>
     </div>
   );

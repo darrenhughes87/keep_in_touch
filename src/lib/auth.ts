@@ -11,14 +11,25 @@ export function sessionOptions(): SessionOptions {
   if (!password || password.length < 32) {
     throw new Error('SESSION_SECRET must be at least 32 characters');
   }
+  const THIRTY_DAYS = 60 * 60 * 24 * 30;
+  // Default to insecure cookies (works over both HTTP and HTTPS). Necessary
+  // when a TLS-terminating reverse proxy (Tailscale Serve, Caddy, etc.) sits
+  // in front and proxies plain HTTP to the container — the browser still sees
+  // HTTPS, but if `secure` is on and any path of the chain looks like HTTP
+  // the session can fail intermittently. Self-hosted single-user app, behind
+  // your own tunnel: this is fine.
+  // Set COOKIE_SECURE=1 if you really want it strict.
+  const secure = process.env.COOKIE_SECURE === '1';
   return {
     cookieName: 'kit_session',
     password,
+    ttl: THIRTY_DAYS, // session-data sealing TTL (was 14 days by default — caused weekly logouts)
     cookieOptions: {
-      secure: process.env.NODE_ENV === 'production',
+      secure,
       httpOnly: true,
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30, // 30 days
+      maxAge: THIRTY_DAYS,
+      path: '/',
     },
   };
 }

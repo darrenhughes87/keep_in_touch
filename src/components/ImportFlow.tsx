@@ -14,7 +14,7 @@ interface ParsedContact {
 export function ImportFlow() {
   const [contacts, setContacts] = useState<ParsedContact[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
-  const [layer, setLayer] = useState<Layer>('good');
+  const [layer, setLayer] = useState<Layer>('acquaintance');
   const [saving, setSaving] = useState(false);
   const router = useRouter();
 
@@ -71,13 +71,16 @@ export function ImportFlow() {
           </div>
 
           <div>
-            <label className="text-xs uppercase tracking-wider text-[var(--color-ink-faint)]">Layer for these</label>
+            <label className="text-xs uppercase tracking-wider text-[var(--color-ink-faint)]">Starting layer</label>
             <select value={layer} onChange={e => setLayer(e.target.value as Layer)} className="w-full mt-1 px-3 py-2 rounded-lg border border-[var(--color-line)] bg-white">
-              <option value="inner">Inner circle</option>
-              <option value="close">Close friend</option>
+              <option value="acquaintance">Acquaintance (recommended — sort later)</option>
               <option value="good">Good friend</option>
-              <option value="acquaintance">Acquaintance</option>
+              <option value="close">Close friend</option>
+              <option value="inner">Inner circle</option>
             </select>
+            <p className="text-xs text-[var(--color-ink-faint)] mt-1">
+              Pick low. On each person's page, tap the layer pills to promote them. Acquaintances surface rarely so nobody you haven't sorted bothers you.
+            </p>
           </div>
 
           <ul className="space-y-1 max-h-[50vh] overflow-y-auto">
