@@ -12,6 +12,26 @@ function client(): Anthropic {
 
 const SYSTEM_BASE = `Write in plain English, British spelling, warm, never marketing-speak. Never use em dashes (—). Never use phrases like "I hope this finds you well" or "just touching base". You are a quiet helper, not a copywriter.`;
 
+export async function cleanDictation(raw: string): Promise<string> {
+  if (!haveAnthropicKey()) return raw;
+  const c = client();
+  const prompt = `Clean up this dictated note. The speaker rambles: changes their mind mid-sentence, repeats themselves, says "um", "you know", "like", etc. Distill into 1 to 3 short sentences capturing only what they actually meant — facts, observations, things that happened. Keep their voice; don't add anything they didn't say. British English. Plain. No em dashes. No quotes, no preamble, no commentary. Output ONLY the cleaned text.
+
+If the input has no clear meaningful content, return the original input unchanged.
+
+Raw dictation:
+${raw}`;
+
+  const res = await c.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 300,
+    system: SYSTEM_BASE,
+    messages: [{ role: 'user', content: prompt }],
+  });
+  const block = res.content[0];
+  return block.type === 'text' ? block.text.trim() : raw;
+}
+
 export async function suggestOpener(personName: string, latestNote: string | null): Promise<string> {
   if (!haveAnthropicKey()) {
     return latestNote
@@ -75,14 +95,15 @@ function localBriefingScript(payload: {
   suggestions: Array<{ name: string; days_since: number | null; latest_note: string | null }>;
   birthdays: Array<{ name: string; days_until: number }>;
 }): string {
+  // Time-neutral — user might listen at any hour. No "morning" or similar.
   if (!payload.suggestions.length && !payload.birthdays.length) {
-    return "Morning. You're all caught up today. No one's drifting. Enjoy your day.";
+    return "You're all caught up. No one's drifting.";
   }
-  const lines: string[] = ['Morning.'];
+  const lines: string[] = [];
   if (payload.suggestions.length === 1) {
-    lines.push(`One name today: ${payload.suggestions[0].name}.`);
+    lines.push(`One name: ${payload.suggestions[0].name}.`);
   } else if (payload.suggestions.length > 1) {
-    lines.push(`A few people today.`);
+    lines.push(`A few people.`);
   }
   for (const s of payload.suggestions) {
     const since = s.days_since ? `${s.days_since} days` : 'a while';
@@ -92,6 +113,5 @@ function localBriefingScript(payload: {
   for (const b of payload.birthdays) {
     lines.push(`${b.name}'s birthday is in ${b.days_until} day${b.days_until === 1 ? '' : 's'}.`);
   }
-  lines.push('That is it. Have a good one.');
   return lines.join(' ');
 }

@@ -35,9 +35,9 @@ export function BriefingButton() {
       >
         <span className="text-lg" aria-hidden>{state === 'speaking' ? '⏸' : '▶'}</span>
         <span>
-          {state === 'idle' && 'Listen to today (20s)'}
+          {state === 'idle' && 'Listen (20s)'}
           {state === 'loading' && 'Preparing…'}
-          {state === 'speaking' && 'Listening… tap to stop'}
+          {state === 'speaking' && 'Tap to stop'}
           {state === 'done' && 'Play again'}
           {state === 'error' && 'Try again'}
         </span>

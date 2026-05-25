@@ -34,7 +34,22 @@ export function defaultCadenceFor(layer: Layer): number {
   return s[`cadence_${layer}` as keyof Settings] as number;
 }
 
-export function listPeople(opts: { layer?: Layer; archived?: boolean; search?: string } = {}): Person[] {
+export function listPeople(opts: { layer?: Layer; archived?: boolean; search?: string; starred?: boolean } = {}): Person[] {
+  const db = getDb();
+  // If there's a search query, also pull in people whose notes match —
+  // so searching "chemo" returns Steve even if "chemo" isn't in his name.
+  const noteMatchIds = new Set<number>();
+  if (opts.search) {
+    try {
+      const rows = db.prepare(`
+        SELECT DISTINCT person_id FROM notes_fts
+        JOIN notes ON notes.id = notes_fts.rowid
+        WHERE notes_fts MATCH ?
+      `).all(opts.search + '*') as Array<{ person_id: number }>;
+      rows.forEach(r => noteMatchIds.add(r.person_id));
+    } catch { /* malformed FTS query, ignore */ }
+  }
+
   let sql = 'SELECT * FROM people WHERE 1=1';
   const params: Record<string, unknown> = {};
   if (!opts.archived) sql += ' AND archived_at IS NULL';
@@ -42,12 +57,19 @@ export function listPeople(opts: { layer?: Layer; archived?: boolean; search?: s
     sql += ' AND layer = @layer';
     params.layer = opts.layer;
   }
+  if (opts.starred) sql += ' AND starred = 1';
   if (opts.search) {
-    sql += ' AND (name LIKE @q OR nickname LIKE @q)';
+    if (noteMatchIds.size > 0) {
+      const placeholders = Array.from(noteMatchIds).map((_, i) => `@nid${i}`).join(',');
+      sql += ` AND (name LIKE @q OR nickname LIKE @q OR id IN (${placeholders}))`;
+      Array.from(noteMatchIds).forEach((id, i) => { params[`nid${i}`] = id; });
+    } else {
+      sql += ' AND (name LIKE @q OR nickname LIKE @q)';
+    }
     params.q = `%${opts.search}%`;
   }
   sql += ' ORDER BY name COLLATE NOCASE';
-  return getDb().prepare(sql).all(params) as Person[];
+  return db.prepare(sql).all(params) as Person[];
 }
 
 export function getPerson(id: number): Person | undefined {
@@ -117,6 +139,28 @@ export function restorePerson(id: number) {
 
 export function snoozePerson(id: number, untilIso: string) {
   getDb().prepare(`UPDATE people SET snoozed_until = ? WHERE id = ?`).run(untilIso, id);
+}
+
+export function setStar(id: number, starred: boolean) {
+  const checked = starred ? new Date().toISOString() : null;
+  getDb().prepare(`UPDATE people SET starred = ?, star_checked_at = ? WHERE id = ?`).run(starred ? 1 : 0, checked, id);
+}
+
+export function confirmStar(id: number) {
+  getDb().prepare(`UPDATE people SET star_checked_at = datetime('now') WHERE id = ?`).run(id);
+}
+
+// People who are starred AND haven't been confirmed in the last 30 days.
+// These surface a gentle "Are you still keeping in touch with X?" card on home.
+export function starsNeedingCheckIn(daysOld = 30, limit = 3): Person[] {
+  return getDb().prepare(`
+    SELECT * FROM people
+    WHERE archived_at IS NULL
+      AND starred = 1
+      AND (star_checked_at IS NULL OR julianday('now') - julianday(star_checked_at) > ?)
+    ORDER BY star_checked_at IS NULL DESC, star_checked_at ASC
+    LIMIT ?
+  `).all(daysOld, limit) as Person[];
 }
 
 // Notes
@@ -200,6 +244,7 @@ export function computeSuggestionsFor(forDate: string): DailySuggestion[] {
       snoozed_until: p.snoozed_until,
       birthday: p.birthday,
       birthday_remind: p.birthday_remind,
+      starred: p.starred,
     });
     return { person: p, score: sc };
   }).filter(x => x.score > 0).sort((a, b) => b.score - a.score);

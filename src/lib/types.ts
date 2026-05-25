@@ -17,6 +17,8 @@ export interface Person {
   notes_facts: string | null;
   snoozed_until: string | null;
   archived_at: string | null;
+  starred: number;
+  star_checked_at: string | null;
   created_at: string;
   updated_at: string;
 }

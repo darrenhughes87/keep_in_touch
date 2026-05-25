@@ -18,8 +18,14 @@ export function getDb(): Database.Database {
 
   // Additive migrations for existing DBs (each ALTER is wrapped to swallow
   // "duplicate column" errors so they're safe to run every boot).
+  // Each statement is wrapped to swallow benign errors so they're safe to
+  // run on every boot. ALTERs throw "duplicate column" if already applied.
+  // CREATE INDEX IF NOT EXISTS is idempotent.
   const adds = [
     "ALTER TABLE settings ADD COLUMN default_country_code TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE people   ADD COLUMN starred              INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE people   ADD COLUMN star_checked_at      TEXT",
+    "CREATE INDEX IF NOT EXISTS idx_people_starred ON people(starred)",
   ];
   for (const sql of adds) {
     try { db.exec(sql); } catch (e: any) {

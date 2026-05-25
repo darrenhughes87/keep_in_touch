@@ -1,17 +1,19 @@
 import { requireSession } from '@/lib/auth';
-import { getOrComputeSuggestions, getSettings, getPerson, latestNote, lastContact, birthdaysSoon, hasMomentToday, listMoments } from '@/lib/queries';
+import { getOrComputeSuggestions, getSettings, getPerson, latestNote, lastContact, birthdaysSoon, hasMomentToday, listMoments, starsNeedingCheckIn } from '@/lib/queries';
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { TopNav } from '@/components/TopNav';
 import { SuggestionCard } from '@/components/SuggestionCard';
 import { BriefingButton } from '@/components/BriefingButton';
 import { MomentPrompt } from '@/components/MomentPrompt';
+import { StarCheckIn } from '@/components/StarCheckIn';
 import Link from 'next/link';
 
+// Time-neutral greetings. The app might be opened at any hour.
 const GREETINGS = {
-  warm: ['Morning.', 'Hey.', 'Hello you.', 'Quiet morning?', 'Hi.'],
-  neutral: ['Today.', 'Morning.', 'Hello.'],
-  brief: ['Today.'],
+  warm: ['Hey.', 'Hello you.', 'Hi.', 'Hi there.'],
+  neutral: ['Hello.', 'Hi.'],
+  brief: ['Hi.'],
 };
 
 export default async function Home() {
@@ -21,6 +23,7 @@ export default async function Home() {
 
   const suggestions = getOrComputeSuggestions();
   const bdays = birthdaysSoon(7);
+  const starCheckIns = starsNeedingCheckIn(30, 1); // one at a time, soft
   const greet = pick(GREETINGS[settings.greeting_tone] || GREETINGS.warm);
   const showMomentPrompt = !!settings.moments_enabled && !hasMomentToday() && isEvening();
   // Small footer link to Year scroll when there's anything to look back at.
@@ -49,6 +52,10 @@ export default async function Home() {
               : `${cards.length} people, if you've got a spare ten minutes.`}
           </p>
         </div>
+
+        {starCheckIns.map(p => (
+          <StarCheckIn key={p.id} person={p} />
+        ))}
 
         {cards.length > 0 && <BriefingButton />}
 

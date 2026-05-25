@@ -7,17 +7,31 @@ import Link from 'next/link';
 import { humanDaysAgo } from '@/lib/time';
 import type { Layer } from '@/lib/types';
 
-export default async function PeoplePage({ searchParams }: { searchParams: Promise<{ layer?: Layer; q?: string }> }) {
+export default async function PeoplePage({ searchParams }: { searchParams: Promise<{ layer?: Layer; q?: string; starred?: string }> }) {
   await requireSession();
   const sp = await searchParams;
   const all = peopleWithMeta();
 
+  // Note-aware search: also include people whose notes match the query.
+  // We compute the set via listPeople({search}) and then filter the
+  // already-loaded `all` (which carries last_contact + days_since metadata).
+  const { searchNotes, listPeople } = await import('@/lib/queries');
+  const noteHits = sp.q ? new Set(listPeople({ search: sp.q }).map(p => p.id)) : null;
+
   const filtered = all.filter(p => {
     if (sp.layer && p.layer !== sp.layer) return false;
-    if (sp.q && !`${p.name} ${p.nickname ?? ''}`.toLowerCase().includes(sp.q.toLowerCase())) return false;
+    if (sp.starred === '1' && !p.starred) return false;
+    if (sp.q) {
+      const hay = `${p.name} ${p.nickname ?? ''}`.toLowerCase();
+      const matchesName = hay.includes(sp.q.toLowerCase());
+      const matchesNote = noteHits?.has(p.id) ?? false;
+      if (!matchesName && !matchesNote) return false;
+    }
     return true;
   }).sort((a, b) => {
-    // sort by drift descending: highest days_since/cadence ratio first
+    // Starred people sink to the bottom of the list — they're "handled".
+    if (!!a.starred !== !!b.starred) return a.starred ? 1 : -1;
+    // Otherwise sort by drift descending.
     const ra = a.days_since == null ? Infinity : a.days_since / a.cadence_days;
     const rb = b.days_since == null ? Infinity : b.days_since / b.cadence_days;
     return rb - ra;
@@ -40,14 +54,14 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
           <input
             name="q"
             defaultValue={sp.q ?? ''}
-            placeholder="Search names…"
+            placeholder="Search names or memories…"
             className="w-full px-4 py-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-bg-card)]"
           />
         </form>
 
         <div className="flex gap-2 overflow-x-auto mt-3 -mx-1 px-1 pb-1">
           {(['all', 'inner', 'close', 'good', 'acquaintance'] as const).map(l => {
-            const active = (sp.layer ?? 'all') === l;
+            const active = (sp.layer ?? 'all') === l && sp.starred !== '1';
             const href = l === 'all' ? '/people' : `/people?layer=${l}`;
             return (
               <Link key={l} href={href} className={`text-xs whitespace-nowrap px-3 py-1.5 rounded-full border ${active ? 'bg-[var(--color-ink)] text-white border-[var(--color-ink)]' : 'border-[var(--color-line)] text-[var(--color-ink-soft)]'}`}>
@@ -55,6 +69,12 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
               </Link>
             );
           })}
+          <Link
+            href="/people?starred=1"
+            className={`text-xs whitespace-nowrap px-3 py-1.5 rounded-full border ${sp.starred === '1' ? 'bg-amber-500 text-white border-amber-500' : 'border-[var(--color-line)] text-[var(--color-ink-soft)]'}`}
+          >
+            ★ Starred
+          </Link>
         </div>
 
         <p className="text-xs text-[var(--color-ink-faint)] mt-3">{filtered.length} {filtered.length === 1 ? 'person' : 'people'}</p>
@@ -65,12 +85,15 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
               <Link href={`/people/${p.id}`} className="flex items-center gap-3 py-3 px-2 rounded-xl active:bg-stone-100">
                 <PersonAvatar person={p} size={40} />
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{p.name}</div>
+                  <div className="font-medium truncate flex items-center gap-1.5">
+                    {p.starred ? <span className="text-amber-500 text-sm" aria-label="starred">★</span> : null}
+                    <span className="truncate">{p.name}</span>
+                  </div>
                   <div className="text-xs text-[var(--color-ink-faint)] mt-0.5">
                     {humanDaysAgo(p.last_contact)} · {p.layer}
                   </div>
                 </div>
-                {p.days_since != null && p.days_since > p.cadence_days * 1.5 && (
+                {!p.starred && p.days_since != null && p.days_since > p.cadence_days * 1.5 && (
                   <span className="text-[10px] text-[var(--color-warm)]">drifting</span>
                 )}
               </Link>

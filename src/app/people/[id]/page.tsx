@@ -4,6 +4,9 @@ import { getPerson, listNotes, listInteractions, lastContact, getSettings } from
 import { notFound } from 'next/navigation';
 import { PersonAvatar } from '@/components/PersonAvatar';
 import { PhotoUploader } from '@/components/PhotoUploader';
+import { SavedToast } from '@/components/SavedToast';
+import { StarToggle } from '@/components/StarToggle';
+import { Suspense } from 'react';
 import { LayerPill } from '@/components/LayerPill';
 import { LayerPicker } from '@/components/LayerPicker';
 import { ContactButtons } from '@/components/ContactButtons';
@@ -30,15 +33,21 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   return (
     <>
       <TopNav title={person.name} back="/people" />
+      <Suspense fallback={null}><SavedToast /></Suspense>
       <main className="max-w-md mx-auto px-4 pb-32">
-        <div className="flex items-center gap-4 py-5">
+        <div className="flex items-start gap-4 py-5">
           <PhotoUploader person={person} size={72} />
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl font-medium truncate">{person.name}</h1>
+            <div className="flex items-start gap-2">
+              <h1 className="text-xl font-medium truncate flex-1">{person.name}</h1>
+              <StarToggle personId={person.id} starred={!!person.starred} firstName={person.name.split(' ')[0]} />
+            </div>
             {person.nickname && <p className="text-sm text-[var(--color-ink-faint)]">"{person.nickname}"</p>}
             <div className="mt-1 flex items-center gap-2 flex-wrap">
               <LayerPill layer={person.layer} />
-              <span className="text-xs text-[var(--color-ink-faint)]">every ~{person.cadence_days}d</span>
+              <span className="text-xs text-[var(--color-ink-faint)]">
+                {person.starred ? 'starred · skipping daily suggestions' : `every ~${person.cadence_days}d`}
+              </span>
             </div>
             <LayerPicker personId={person.id} current={person.layer} />
           </div>

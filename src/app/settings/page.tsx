@@ -1,11 +1,13 @@
 import { requireSession } from '@/lib/auth';
 import { TopNav } from '@/components/TopNav';
 import { getSettings, updateSettings } from '@/lib/queries';
-import { revalidatePath } from 'next/cache';
 import Link from 'next/link';
 import { haveAnthropicKey } from '@/lib/anthropic';
 import { NotificationToggle } from '@/components/NotificationToggle';
 import { ResyncCadenceButton } from '@/components/ResyncCadenceButton';
+import { SavedToast } from '@/components/SavedToast';
+import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 
 export default async function SettingsPage() {
   await requireSession();
@@ -26,12 +28,13 @@ export default async function SettingsPage() {
       cadence_acquaintance: parseInt(String(formData.get('cadence_acquaintance') ?? '180'), 10),
       default_country_code: String(formData.get('default_country_code') ?? '').trim(),
     });
-    revalidatePath('/settings');
+    redirect(`/settings?saved=${Date.now()}`);
   }
 
   return (
     <>
       <TopNav title="Settings" back="/" />
+      <Suspense fallback={null}><SavedToast /></Suspense>
       <main className="max-w-md mx-auto px-4 pb-24 pt-2">
         <form action={save} className="space-y-5 mt-3">
           <Section title="Greeting">

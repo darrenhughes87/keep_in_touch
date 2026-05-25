@@ -27,7 +27,7 @@ export default async function EditPersonPage({ params }: { params: Promise<{ id:
       partner_kids: (String(formData.get('partner_kids') ?? '') || null) as any,
       notes_facts: (String(formData.get('notes_facts') ?? '') || null) as any,
     });
-    redirect(`/people/${pid}`);
+    redirect(`/people/${pid}?saved=${Date.now()}`);
   }
 
   return (

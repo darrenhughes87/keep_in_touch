@@ -10,6 +10,7 @@ export function PhotoUploader({ person, size = 72 }: { person: Person; size?: nu
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [stamp, setStamp] = useState(Date.now()); // cache-bust the photo route after upload
+  const [flash, setFlash] = useState<string | null>(null);
 
   async function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -21,6 +22,8 @@ export function PhotoUploader({ person, size = 72 }: { person: Person; size?: nu
     setBusy(false);
     if (r.ok) {
       setStamp(Date.now());
+      setFlash('Photo updated');
+      setTimeout(() => setFlash(null), 1500);
       router.refresh();
     } else {
       const j = await r.json().catch(() => ({}));
@@ -34,6 +37,8 @@ export function PhotoUploader({ person, size = 72 }: { person: Person; size?: nu
     await fetch(`/api/people/${person.id}/photo`, { method: 'DELETE' });
     setBusy(false);
     setStamp(Date.now());
+    setFlash('Photo removed');
+    setTimeout(() => setFlash(null), 1500);
     router.refresh();
   }
 
@@ -70,6 +75,11 @@ export function PhotoUploader({ person, size = 72 }: { person: Person; size?: nu
         >
           ×
         </button>
+      )}
+      {flash && (
+        <div role="status" aria-live="polite" className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[var(--color-ink)] text-white px-5 py-2.5 rounded-full text-sm shadow-lg z-50">
+          {flash}
+        </div>
       )}
     </div>
   );

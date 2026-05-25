@@ -8,9 +8,15 @@ export interface ScoreInput {
   snoozed_until: string | null;
   birthday: string | null;
   birthday_remind: number;
+  starred?: number;
 }
 
 export function score(p: ScoreInput): number {
+  // Starred → never surfaced; the user already messages them often.
+  // A periodic check-in card asks them to confirm; if not confirmed within
+  // 30 days the star is auto-removed and they return to the normal schedule.
+  if (p.starred) return 0;
+
   // snoozed → zero
   if (p.snoozed_until && new Date(p.snoozed_until).getTime() > Date.now()) return 0;
 

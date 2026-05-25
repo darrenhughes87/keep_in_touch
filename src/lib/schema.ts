@@ -18,11 +18,16 @@ CREATE TABLE IF NOT EXISTS people (
   notes_facts     TEXT,
   snoozed_until   TEXT,
   archived_at     TEXT,
+  starred         INTEGER NOT NULL DEFAULT 0,
+  star_checked_at TEXT,
   created_at      TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_people_archived ON people(archived_at);
 CREATE INDEX IF NOT EXISTS idx_people_layer    ON people(layer);
+-- idx_people_starred is created in the runtime migration in db.ts so that
+-- existing databases (which need the column added via ALTER first) don't fail
+-- on the IF NOT EXISTS index check.
 
 CREATE TABLE IF NOT EXISTS notes (
   id           INTEGER PRIMARY KEY,
