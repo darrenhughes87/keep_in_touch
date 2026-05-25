@@ -63,6 +63,7 @@ export interface Settings {
   cadence_good: number;
   cadence_acquaintance: number;
   onboarded: number;
+  default_country_code: string;
 }
 
 export interface Moment {

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import Link from 'next/link';
 import { haveAnthropicKey } from '@/lib/anthropic';
 import { NotificationToggle } from '@/components/NotificationToggle';
+import { ResyncCadenceButton } from '@/components/ResyncCadenceButton';
 
 export default async function SettingsPage() {
   await requireSession();
@@ -23,6 +24,7 @@ export default async function SettingsPage() {
       cadence_close: parseInt(String(formData.get('cadence_close') ?? '21'), 10),
       cadence_good: parseInt(String(formData.get('cadence_good') ?? '60'), 10),
       cadence_acquaintance: parseInt(String(formData.get('cadence_acquaintance') ?? '180'), 10),
+      default_country_code: String(formData.get('default_country_code') ?? '').trim(),
     });
     revalidatePath('/settings');
   }
@@ -54,13 +56,30 @@ export default async function SettingsPage() {
             <QuietDays defaultCsv={s.quiet_days} />
           </Section>
 
+          <Section title="Default country code">
+            <p className="text-xs text-[var(--color-ink-faint)] mb-2">
+              Used to fix phone numbers that don't already have one. UK is <code>+44</code>, US/Canada is <code>+1</code>, leave blank to disable. Applies to WhatsApp / Call / SMS links at the moment you tap them, so changing this fixes existing contacts instantly.
+            </p>
+            <input
+              type="text"
+              name="default_country_code"
+              defaultValue={s.default_country_code}
+              placeholder="+44"
+              className="px-3 py-2 rounded-lg border border-[var(--color-line)] bg-white w-32"
+            />
+          </Section>
+
           <Section title="Cadence defaults (days)">
+            <p className="text-xs text-[var(--color-ink-faint)] mb-2">
+              Days between contacts per layer. Used for new people, and when you promote someone to a different layer.
+            </p>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Inner" name="cadence_inner" defaultValue={String(s.cadence_inner)} type="number" />
               <Field label="Close" name="cadence_close" defaultValue={String(s.cadence_close)} type="number" />
               <Field label="Good" name="cadence_good" defaultValue={String(s.cadence_good)} type="number" />
               <Field label="Acquaintance" name="cadence_acquaintance" defaultValue={String(s.cadence_acquaintance)} type="number" />
             </div>
+            <ResyncCadenceButton />
           </Section>
 
           <Section title="Morning push (optional)">

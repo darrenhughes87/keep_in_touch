@@ -11,9 +11,10 @@ interface Props {
   person: Person;
   daysSince: number | null;
   latestNote: Note | null;
+  countryCode?: string;
 }
 
-export function SuggestionCard({ suggestionId, person, daysSince, latestNote }: Props) {
+export function SuggestionCard({ suggestionId, person, daysSince, latestNote, countryCode = '' }: Props) {
   const [dismissed, setDismissed] = useState(false);
   const [reached, setReached] = useState(false);
 
@@ -52,7 +53,7 @@ export function SuggestionCard({ suggestionId, person, daysSince, latestNote }: 
           {latestNote.body}
         </p>
       )}
-      <ContactButtons person={person} compact onAct={() => setTimeout(() => setReached(true), 800)} />
+      <ContactButtons person={person} compact countryCode={countryCode} onAct={() => setTimeout(() => setReached(true), 800)} />
       <div className="flex items-center justify-between text-xs">
         <Link href={`/people/${person.id}`} className="text-[var(--color-ink-faint)] underline-offset-2 hover:underline">
           Open

@@ -22,7 +22,8 @@ export function updateSettings(patch: Partial<Settings>) {
       cadence_close=@cadence_close,
       cadence_good=@cadence_good,
       cadence_acquaintance=@cadence_acquaintance,
-      onboarded=@onboarded
+      onboarded=@onboarded,
+      default_country_code=@default_country_code
     WHERE id = 1
   `).run(merged);
   return getSettings();
@@ -81,6 +82,16 @@ export function createPerson(p: Partial<Person> & { name: string; layer: Layer }
 export function updatePerson(id: number, patch: Partial<Person>): Person | undefined {
   const cur = getPerson(id);
   if (!cur) return undefined;
+  // When the layer changes and the caller didn't also pass a new cadence,
+  // snap cadence_days to the new layer's default — but ONLY if the current
+  // cadence is still the old layer's default. If they've customised it,
+  // leave the custom value alone.
+  if (patch.layer && patch.layer !== cur.layer && patch.cadence_days === undefined) {
+    const oldDefault = defaultCadenceFor(cur.layer);
+    if (cur.cadence_days === oldDefault) {
+      patch = { ...patch, cadence_days: defaultCadenceFor(patch.layer) };
+    }
+  }
   const m = { ...cur, ...patch, id };
   getDb().prepare(`
     UPDATE people SET

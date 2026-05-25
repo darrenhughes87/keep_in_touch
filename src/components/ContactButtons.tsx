@@ -1,6 +1,7 @@
 'use client';
 
 import type { Person } from '@/lib/types';
+import { normalisePhone } from '@/lib/phone';
 
 async function logTap(personId: number, channel: string) {
   try {
@@ -14,14 +15,16 @@ async function logTap(personId: number, channel: string) {
   }
 }
 
-export function ContactButtons({ person, compact = false, onAct }: { person: Person; compact?: boolean; onAct?: () => void }) {
-  const wa = person.whatsapp_phone || person.phone || '';
-  const tel = person.phone || person.whatsapp_phone || '';
+export function ContactButtons({ person, compact = false, onAct, countryCode = '' }: { person: Person; compact?: boolean; onAct?: () => void; countryCode?: string }) {
+  const wa = normalisePhone(person.whatsapp_phone || person.phone || '', countryCode);
+  // For tel: / sms: keep the user-friendly form too — but if we have a normalised
+  // international number, prefer that since most dialers handle it.
+  const tel = normalisePhone(person.phone || person.whatsapp_phone || '', countryCode);
   const email = person.email || '';
 
-  const waHref = wa ? `https://wa.me/${wa.replace(/[^\d]/g, '')}` : '';
-  const smsHref = tel ? `sms:${tel}` : '';
-  const callHref = tel ? `tel:${tel}` : '';
+  const waHref = wa ? `https://wa.me/${wa}` : '';
+  const smsHref = tel ? `sms:+${tel}` : '';
+  const callHref = tel ? `tel:+${tel}` : '';
   const mailHref = email ? `mailto:${email}` : '';
 
   const baseBtn = compact

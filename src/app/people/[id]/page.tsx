@@ -1,6 +1,6 @@
 import { requireSession } from '@/lib/auth';
 import { TopNav } from '@/components/TopNav';
-import { getPerson, listNotes, listInteractions, lastContact } from '@/lib/queries';
+import { getPerson, listNotes, listInteractions, lastContact, getSettings } from '@/lib/queries';
 import { notFound } from 'next/navigation';
 import { PersonAvatar } from '@/components/PersonAvatar';
 import { PhotoUploader } from '@/components/PhotoUploader';
@@ -22,6 +22,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
 
   const notes = listNotes(pid);
   const interactions = listInteractions(pid, 12);
+  const settings = getSettings();
   const lc = lastContact(pid);
   const daysSince = lc ? Math.floor((Date.now() - new Date(lc).getTime()) / 86_400_000) : null;
   const bday = daysUntilBirthday(person.birthday);
@@ -54,7 +55,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         </p>
 
         <div className="mt-4">
-          <ContactButtons person={person} />
+          <ContactButtons person={person} countryCode={settings.default_country_code} />
         </div>
 
         <OpenerButton personId={person.id} personName={person.name} />

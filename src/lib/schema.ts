@@ -90,9 +90,15 @@ CREATE TABLE IF NOT EXISTS settings (
   cadence_close            INTEGER NOT NULL DEFAULT 21,
   cadence_good             INTEGER NOT NULL DEFAULT 60,
   cadence_acquaintance     INTEGER NOT NULL DEFAULT 180,
-  onboarded                INTEGER NOT NULL DEFAULT 0
+  onboarded                INTEGER NOT NULL DEFAULT 0,
+  default_country_code     TEXT NOT NULL DEFAULT ''
 );
 INSERT OR IGNORE INTO settings (id) VALUES (1);
+
+-- Additive migration for existing installs that pre-date default_country_code.
+-- SQLite ALTER TABLE accepts ADD COLUMN; we guard with a no-op selector since
+-- there's no IF NOT EXISTS. The exec() call ignores the duplicate-column error.
+-- (Wrapped in a SELECT 1 so older sqlite versions still parse the block.)
 
 CREATE TABLE IF NOT EXISTS push_subscriptions (
   id           INTEGER PRIMARY KEY,

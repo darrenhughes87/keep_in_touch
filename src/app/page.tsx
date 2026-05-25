@@ -1,5 +1,6 @@
 import { requireSession } from '@/lib/auth';
 import { getOrComputeSuggestions, getSettings, getPerson, latestNote, lastContact, birthdaysSoon, hasMomentToday } from '@/lib/queries';
+import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { TopNav } from '@/components/TopNav';
 import { SuggestionCard } from '@/components/SuggestionCard';
@@ -57,6 +58,7 @@ export default async function Home() {
               person={c.person}
               daysSince={c.daysSince}
               latestNote={c.latestNote as any}
+              countryCode={settings.default_country_code}
             />
           ))}
         </div>
