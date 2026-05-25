@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 
-export async function GET() {
+// POST only. A GET would be prefetched by Next.js when any <Link href="/logout">
+// is visible on the page, silently destroying the session every time you opened
+// Settings.
+export async function POST(req: Request) {
   const s = await getSession();
   s.destroy();
-  return NextResponse.redirect(new URL('/login', process.env.APP_URL || 'http://localhost:3100'));
+  const url = new URL('/login', req.url);
+  return NextResponse.redirect(url, { status: 303 });
 }

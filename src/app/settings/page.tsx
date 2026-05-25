@@ -116,7 +116,11 @@ export default async function SettingsPage() {
               {haveAnthropicKey() ? '✓ Anthropic key detected — opener suggestions and briefings use Haiku.' : 'No Anthropic key set — opener suggestions and briefings use local templates.'}
             </div>
           </div>
-          <Link href="/logout" className="block text-center text-sm text-[var(--color-ink-faint)] py-4">Log out</Link>
+          <form action="/logout" method="POST">
+            <button type="submit" className="block w-full text-center text-sm text-[var(--color-ink-faint)] py-4">
+              Log out
+            </button>
+          </form>
         </div>
       </main>
     </>
