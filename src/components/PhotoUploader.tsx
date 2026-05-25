@@ -58,7 +58,6 @@ export function PhotoUploader({ person, size = 72 }: { person: Person; size?: nu
         ref={fileRef}
         type="file"
         accept="image/*"
-        capture="user"
         className="hidden"
         onChange={onChange}
       />

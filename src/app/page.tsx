@@ -1,5 +1,5 @@
 import { requireSession } from '@/lib/auth';
-import { getOrComputeSuggestions, getSettings, getPerson, latestNote, lastContact, birthdaysSoon, hasMomentToday } from '@/lib/queries';
+import { getOrComputeSuggestions, getSettings, getPerson, latestNote, lastContact, birthdaysSoon, hasMomentToday, listMoments } from '@/lib/queries';
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { TopNav } from '@/components/TopNav';
@@ -23,6 +23,8 @@ export default async function Home() {
   const bdays = birthdaysSoon(7);
   const greet = pick(GREETINGS[settings.greeting_tone] || GREETINGS.warm);
   const showMomentPrompt = !!settings.moments_enabled && !hasMomentToday() && isEvening();
+  // Small footer link to Year scroll when there's anything to look back at.
+  const recentMoments = settings.moments_enabled ? listMoments().slice(0, 1) : [];
 
   const cards = suggestions.map(s => {
     const person = getPerson(s.person_id);
@@ -87,6 +89,14 @@ export default async function Home() {
         )}
 
         {showMomentPrompt && <MomentPrompt />}
+
+        {recentMoments.length > 0 && (
+          <div className="text-center mt-10">
+            <Link href="/year" className="text-xs text-[var(--color-ink-faint)] underline-offset-2 hover:underline">
+              Look back at your moments
+            </Link>
+          </div>
+        )}
       </main>
     </>
   );
