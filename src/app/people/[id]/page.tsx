@@ -91,7 +91,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             <ul className="space-y-1 text-sm text-[var(--color-ink-soft)]">
               {interactions.map(i => (
                 <li key={i.id} className="flex justify-between">
-                  <span>{i.channel}</span>
+                  <span>{interactionLabel(i.channel, i.origin)}</span>
                   <span className="text-[var(--color-ink-faint)]">{humanDaysAgo(i.happened_at)}</span>
                 </li>
               ))}
@@ -118,4 +118,18 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
       <dd className="flex-1">{children}</dd>
     </div>
   );
+}
+
+function interactionLabel(channel: string, origin: string): string {
+  // Manual-log entries (the "Log a chat" button) just say "chat" since we
+  // didn't actually ask which channel was used.
+  if (origin === 'manual_log') return 'chat logged';
+  switch (channel) {
+    case 'whatsapp':  return 'WhatsApp';
+    case 'sms':       return 'SMS';
+    case 'call':      return 'call';
+    case 'email':     return 'email';
+    case 'in_person': return 'met up';
+    default:          return 'chat';
+  }
 }

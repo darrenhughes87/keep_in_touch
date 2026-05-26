@@ -138,7 +138,12 @@ export function restorePerson(id: number) {
 }
 
 export function snoozePerson(id: number, untilIso: string) {
-  getDb().prepare(`UPDATE people SET snoozed_until = ? WHERE id = ?`).run(untilIso, id);
+  const db = getDb();
+  db.prepare(`UPDATE people SET snoozed_until = ? WHERE id = ?`).run(untilIso, id);
+  // Same pattern as setStar: today's daily_suggestions row is already computed,
+  // so just flipping snoozed_until on the person record wasn't enough to make
+  // them disappear from the home screen. Delete the pre-computed suggestion.
+  db.prepare(`DELETE FROM daily_suggestions WHERE person_id = ?`).run(id);
 }
 
 export function setStar(id: number, starred: boolean) {
@@ -281,9 +286,9 @@ export function computeSuggestionsFor(forDate: string): DailySuggestion[] {
 }
 
 export function getSuggestions(forDate: string): DailySuggestion[] {
-  // Belt-and-braces: also filter out any whose person became starred after
-  // the daily compute (setStar already deletes them, but a manual SQL edit
-  // or older row could slip through).
+  // Belt-and-braces: filter out anyone who became starred, archived, or
+  // snoozed after the daily compute (the respective setters already delete
+  // their suggestion row, but a stale row shouldn't show either).
   return getDb().prepare(`
     SELECT s.* FROM daily_suggestions s
     JOIN people p ON p.id = s.person_id
@@ -292,6 +297,7 @@ export function getSuggestions(forDate: string): DailySuggestion[] {
       AND s.acted_at IS NULL
       AND p.archived_at IS NULL
       AND p.starred = 0
+      AND (p.snoozed_until IS NULL OR p.snoozed_until <= datetime('now'))
     ORDER BY s.rank ASC
   `).all(forDate) as DailySuggestion[];
 }

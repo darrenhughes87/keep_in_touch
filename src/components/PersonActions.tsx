@@ -41,7 +41,10 @@ export function PersonActions({ person }: { person: Person }) {
     await fetch(`/api/people/${person.id}/interactions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ channel: 'in_person', origin: 'manual_log' }),
+      // 'other' channel: the button doesn't ask how the chat happened, so
+      // recording it as 'in_person' was misleading. 'manual_log' origin
+      // distinguishes these from button taps in the UI.
+      body: JSON.stringify({ channel: 'other', origin: 'manual_log' }),
     });
     flash('Chat logged');
     router.refresh();
