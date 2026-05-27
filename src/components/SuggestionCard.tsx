@@ -13,9 +13,10 @@ interface Props {
   daysSince: number | null;
   latestNote: Note | null;
   countryCode?: string;
+  followUpDue?: boolean;
 }
 
-export function SuggestionCard({ suggestionId, person, daysSince, latestNote, countryCode = '' }: Props) {
+export function SuggestionCard({ suggestionId, person, daysSince, latestNote, countryCode = '', followUpDue = false }: Props) {
   const [dismissed, setDismissed] = useState(false);
   const [reached, setReached] = useState(false);
 
@@ -34,12 +35,14 @@ export function SuggestionCard({ suggestionId, person, daysSince, latestNote, co
     await fetch(`/api/suggestions/${suggestionId}/dismiss`, { method: 'POST' });
   }
 
-  const cadenceLine = daysSince == null
+  const cadenceLine = followUpDue
+    ? `You scheduled a follow-up. Drop ${person.name.split(' ')[0]} a line.`
+    : daysSince == null
     ? `You haven't logged a chat with ${person.name} yet.`
     : `You and ${person.name.split(' ')[0]} usually chat every ${dayWord(person.cadence_days)}. It's been ${daysSince} days.`;
 
   return (
-    <article className="bg-[var(--color-bg-card)] rounded-2xl border border-[var(--color-line)] p-4 space-y-3 shadow-sm">
+    <article className={`rounded-2xl border p-4 space-y-3 shadow-sm ${followUpDue ? 'bg-[var(--color-accent-soft)] border-[var(--color-accent-soft)]' : 'bg-[var(--color-bg-card)] border-[var(--color-line)]'}`}>
       <Link href={`/people/${person.id}`} className="flex items-center gap-3">
         <PersonAvatar person={person} size={48} />
         <div className="flex-1 min-w-0">

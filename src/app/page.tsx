@@ -1,5 +1,5 @@
 import { requireSession } from '@/lib/auth';
-import { getOrComputeSuggestions, getSettings, getPerson, latestNote, lastContact, birthdaysSoon, hasMomentToday, listMoments, starsNeedingCheckIn } from '@/lib/queries';
+import { getOrComputeSuggestions, getSettings, getPerson, latestNote, lastContact, birthdaysSoon, hasMomentToday, listMoments, starsNeedingCheckIn, followUpsDue } from '@/lib/queries';
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { TopNav } from '@/components/TopNav';
@@ -22,6 +22,7 @@ export default async function Home() {
   if (!settings.onboarded) redirect('/onboarding');
 
   const suggestions = getOrComputeSuggestions();
+  const followUps = followUpsDue();
   const bdays = birthdaysSoon(7);
   const starCheckIns = starsNeedingCheckIn(30, 1); // one at a time, soft
   const greet = pick(GREETINGS[settings.greeting_tone] || GREETINGS.warm);
@@ -29,7 +30,10 @@ export default async function Home() {
   // Small footer link to Year scroll when there's anything to look back at.
   const recentMoments = settings.moments_enabled ? listMoments().slice(0, 1) : [];
 
-  const cards = suggestions.map(s => {
+  // De-dupe: if a person has a follow-up due, skip them in the normal
+  // suggestion section (they get their own "Follow up" card above).
+  const followUpIds = new Set(followUps.map(p => p.id));
+  const cards = suggestions.filter(s => !followUpIds.has(s.person_id)).map(s => {
     const person = getPerson(s.person_id);
     if (!person) return null;
     const lc = lastContact(s.person_id);
@@ -37,6 +41,13 @@ export default async function Home() {
     const ln = latestNote(s.person_id);
     return { id: s.id, person, daysSince: ds, latestNote: ln ?? null };
   }).filter(Boolean) as Array<{ id: number; person: NonNullable<ReturnType<typeof getPerson>>; daysSince: number | null; latestNote: ReturnType<typeof latestNote> | null }>;
+
+  const followUpCards = followUps.map(person => {
+    const lc = lastContact(person.id);
+    const ds = lc ? Math.floor((Date.now() - new Date(lc).getTime()) / 86_400_000) : null;
+    const ln = latestNote(person.id);
+    return { person, daysSince: ds, latestNote: ln ?? null };
+  });
 
   return (
     <>
@@ -57,7 +68,26 @@ export default async function Home() {
           <StarCheckIn key={p.id} person={p} />
         ))}
 
-        {cards.length > 0 && <BriefingButton />}
+        {followUpCards.length > 0 && (
+          <section className="mb-4">
+            <h2 className="text-xs uppercase tracking-wider text-[var(--color-ink-faint)] mb-2">You wanted to check in</h2>
+            <div className="space-y-3">
+              {followUpCards.map(c => (
+                <SuggestionCard
+                  key={`fu-${c.person.id}`}
+                  suggestionId={-c.person.id /* synthetic, won't match daily_suggestions */}
+                  person={c.person}
+                  daysSince={c.daysSince}
+                  latestNote={c.latestNote as any}
+                  countryCode={settings.default_country_code}
+                  followUpDue
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {(cards.length > 0 || followUpCards.length > 0) && <BriefingButton />}
 
         <div className="space-y-3 mt-2">
           {cards.map(c => (

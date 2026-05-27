@@ -146,6 +146,27 @@ export function snoozePerson(id: number, untilIso: string) {
   db.prepare(`DELETE FROM daily_suggestions WHERE person_id = ?`).run(id);
 }
 
+export function scheduleFollowUp(id: number, untilIso: string) {
+  getDb().prepare(`UPDATE people SET follow_up_at = ? WHERE id = ?`).run(untilIso, id);
+}
+
+export function clearFollowUp(id: number) {
+  getDb().prepare(`UPDATE people SET follow_up_at = NULL WHERE id = ?`).run(id);
+}
+
+// People whose scheduled follow-up has come due. Surfaces ABOVE the normal
+// daily suggestions on the home screen, ignoring snooze/star (a follow-up
+// is a deliberate appointment Darren set, it should win).
+export function followUpsDue(): Person[] {
+  return getDb().prepare(`
+    SELECT * FROM people
+    WHERE archived_at IS NULL
+      AND follow_up_at IS NOT NULL
+      AND follow_up_at <= datetime('now')
+    ORDER BY follow_up_at ASC
+  `).all() as Person[];
+}
+
 export function setStar(id: number, starred: boolean) {
   const db = getDb();
   const checked = starred ? new Date().toISOString() : null;
@@ -233,11 +254,14 @@ export function logInteraction(
   origin: Interaction['origin'] = 'button_tap',
   direction: 'out' | 'in' = 'out'
 ): Interaction {
-  const info = getDb().prepare(`
+  const db = getDb();
+  const info = db.prepare(`
     INSERT INTO interactions (person_id, channel, direction, origin)
     VALUES (?, ?, ?, ?)
   `).run(personId, channel, direction, origin);
-  return getDb().prepare('SELECT * FROM interactions WHERE id = ?').get(info.lastInsertRowid) as Interaction;
+  // Any actual contact closes a pending follow-up — that was the whole point.
+  db.prepare(`UPDATE people SET follow_up_at = NULL WHERE id = ? AND follow_up_at IS NOT NULL`).run(personId);
+  return db.prepare('SELECT * FROM interactions WHERE id = ?').get(info.lastInsertRowid) as Interaction;
 }
 
 export function lastContact(personId: number): string | null {

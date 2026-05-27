@@ -19,6 +19,7 @@ export interface Person {
   archived_at: string | null;
   starred: number;
   star_checked_at: string | null;
+  follow_up_at: string | null;
   created_at: string;
   updated_at: string;
 }

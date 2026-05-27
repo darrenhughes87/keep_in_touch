@@ -6,6 +6,7 @@ import { PersonAvatar } from '@/components/PersonAvatar';
 import { PhotoUploader } from '@/components/PhotoUploader';
 import { SavedToast } from '@/components/SavedToast';
 import { StarToggle } from '@/components/StarToggle';
+import { FollowUpScheduler } from '@/components/FollowUpScheduler';
 import { Suspense } from 'react';
 import { LayerPill } from '@/components/LayerPill';
 import { LayerPicker } from '@/components/LayerPicker';
@@ -68,6 +69,8 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         </div>
 
         <OpenerButton personId={person.id} personName={person.name} />
+
+        <FollowUpScheduler person={person} />
 
         <NoteSection personId={person.id} initialNotes={notes} />
 

@@ -39,14 +39,26 @@ services:
       kit-web:
         condition: service_started
     env_file: .env
+    environment:
+      TZ: ${TZ:-UTC}
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
         apk add --no-cache curl tzdata >/dev/null 2>&1 || true
+        # Alpine's cron daemon reads system time from /etc/localtime, not the
+        # TZ env var, so symlink it from the requested zone. Without this the
+        # 08:30 push fires at 08:30 UTC, which is 09:30 BST — an hour late
+        # for UK users during summer time.
+        if [ -n "$$TZ" ] && [ -f "/usr/share/zoneinfo/$$TZ" ]; then
+          cp /usr/share/zoneinfo/$$TZ /etc/localtime
+          echo $$TZ > /etc/timezone
+        fi
         cat > /etc/crontabs/root <<EOF
         30 6 * * * curl -sS -X POST -H "Authorization: Bearer $$CRON_SECRET" http://kit-web:3100/api/cron/compute-suggestions >> /var/log/cron.log 2>&1
         30 8 * * * curl -sS -X POST -H "Authorization: Bearer $$CRON_SECRET" http://kit-web:3100/api/cron/morning-push >> /var/log/cron.log 2>&1
         EOF
+        # Log current container time on boot so deploys can verify TZ took.
+        echo "[kit-cron] booted, container time: $$(date)"
         crond -f -l 2
 
 volumes:
