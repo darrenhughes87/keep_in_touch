@@ -84,7 +84,7 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
                   <PersonAvatar person={p} size={44} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 truncate">
-                      {p.starred && <span className="text-[var(--color-star)] text-sm" aria-label="starred">★</span>}
+                      {!!p.starred && <span className="text-[var(--color-star)] text-sm" aria-label="starred">★</span>}
                       <span className="truncate font-medium">{p.name}</span>
                     </div>
                     <div className="mt-0.5 text-xs text-[var(--color-ink-faint)]">
