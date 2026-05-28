@@ -1,10 +1,9 @@
 // Keep In Touch — minimal service worker.
-// v2 — only cache files that actually exist, and don't let a missing
-// file kill the entire install (which previously stranded the worker
-// in 'installing' forever).
+// v3 — stop precaching the icon so logo changes show up without a SW bump.
+// The icon is tiny and served fast; let the browser HTTP-cache it instead.
 
-const CACHE = 'kit-v2';
-const STATIC = ['/manifest.webmanifest', '/icon.svg'];
+const CACHE = 'kit-v3';
+const STATIC = ['/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
