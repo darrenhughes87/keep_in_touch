@@ -1,6 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#f5f5f0"/>
-  <circle cx="22" cy="28" r="9" fill="#7fb8a4"/>
-  <circle cx="42" cy="28" r="9" fill="#d49a78"/>
-  <path d="M16 46 Q32 60 48 46" stroke="#3a3a40" stroke-width="3" fill="none" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Keep In Touch">
+  <rect width="64" height="64" rx="15" fill="#7fb8a4"/>
+  <!-- speech bubble -->
+  <path d="M15 16h34a5 5 0 0 1 5 5v17a5 5 0 0 1-5 5H30l-9 7.5a1 1 0 0 1-1.6-.8V43H15a5 5 0 0 1-5-5V21a5 5 0 0 1 5-5z" fill="#fdfdfb"/>
+  <!-- warm heart inside -->
+  <path d="M32 37.5c-5.6-3.8-9-6.3-9-10a4.6 4.6 0 0 1 8-3.1l1 1.1 1-1.1a4.6 4.6 0 0 1 8 3.1c0 3.7-3.4 6.2-9 10z" fill="#d4756b"/>
 </svg>
