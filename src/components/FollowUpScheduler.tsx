@@ -54,24 +54,21 @@ export function FollowUpScheduler({ person }: { person: Person }) {
   if (hasPending && !open) {
     return (
       <>
-        <div className="mt-4 bg-[var(--color-accent-soft)] border border-[var(--color-accent-soft)] rounded-xl p-3 flex items-center justify-between gap-3">
-          <p className="text-sm text-[var(--color-ink)]">
-            <span aria-hidden>📅</span> Following up <span className="font-medium">{dueLabel}</span>
+        <div className="mt-4 flex items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-[var(--color-accent-line)] bg-[var(--color-accent-soft)] p-3.5">
+          <p className="flex items-center gap-2 text-sm text-[var(--color-ink)]">
+            <CalendarIcon />
+            Following up <span className="font-medium">{dueLabel}</span>
           </p>
-          <div className="flex gap-2 shrink-0">
-            <button onClick={() => setOpen(true)} className="text-xs text-[var(--color-ink-soft)] underline-offset-2 hover:underline">
+          <div className="flex shrink-0 gap-3">
+            <button onClick={() => setOpen(true)} className="text-xs text-[var(--color-ink-soft)] underline-offset-4 hover:underline">
               Change
             </button>
-            <button onClick={clear} className="text-xs text-[var(--color-ink-faint)] underline-offset-2 hover:underline">
+            <button onClick={clear} className="text-xs text-[var(--color-ink-faint)] underline-offset-4 hover:underline">
               Clear
             </button>
           </div>
         </div>
-        {flash && (
-          <div role="status" aria-live="polite" className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[var(--color-ink)] text-white px-5 py-2.5 rounded-full text-sm shadow-lg z-50">
-            {flash}
-          </div>
-        )}
+        {flash && <Toast>{flash}</Toast>}
       </>
     );
   }
@@ -81,34 +78,35 @@ export function FollowUpScheduler({ person }: { person: Person }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-4 w-full text-sm py-2 px-3 rounded-xl border border-dashed border-[var(--color-line)] text-[var(--color-ink-soft)] active:bg-stone-100"
+        className="mt-4 flex w-full items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-dashed border-[var(--color-line)] px-3 py-2.5 text-sm text-[var(--color-ink-soft)] active:bg-[var(--color-bg-sunken)] transition-colors"
       >
-        📅 Schedule a follow-up
+        <CalendarIcon /> Schedule a follow-up
       </button>
     );
   }
 
   return (
     <>
-      <div className="mt-4 bg-[var(--color-bg-card)] border border-[var(--color-line)] rounded-xl p-3 space-y-3">
-        <p className="text-xs text-[var(--color-ink-soft)]">
+      <div className="mt-4 space-y-3 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-bg-card)] p-3.5 shadow-[var(--shadow-card)]">
+        <p className="text-xs leading-relaxed text-[var(--color-ink-soft)]">
           Surface this person on your home screen on the day. Any contact (WhatsApp / call / log a chat) will clear it.
         </p>
         <div className="flex flex-wrap gap-2">
-          <button onClick={() => set(1)} className="px-3 py-1.5 rounded-full text-xs font-medium bg-stone-100 text-[var(--color-ink-soft)]">In 1 day</button>
-          <button onClick={() => set(3)} className="px-3 py-1.5 rounded-full text-xs font-medium bg-stone-100 text-[var(--color-ink-soft)]">In 3 days</button>
-          <button onClick={() => set(7)} className="px-3 py-1.5 rounded-full text-xs font-medium bg-stone-100 text-[var(--color-ink-soft)]">In 1 week</button>
-          <button onClick={() => set(14)} className="px-3 py-1.5 rounded-full text-xs font-medium bg-stone-100 text-[var(--color-ink-soft)]">In 2 weeks</button>
+          {[[1, 'In 1 day'], [3, 'In 3 days'], [7, 'In 1 week'], [14, 'In 2 weeks']].map(([d, label]) => (
+            <button key={d} onClick={() => set(d as number)} className="rounded-full bg-[var(--color-bg-sunken)] px-3.5 py-2 text-xs font-medium text-[var(--color-ink-soft)] active:scale-95 transition-transform">
+              {label}
+            </button>
+          ))}
         </div>
-        <div className="flex gap-2 items-center">
+        <div className="flex items-center gap-2">
           <input
             type="date"
             value={customDate}
             min={new Date().toISOString().slice(0, 10)}
             onChange={e => setCustomDate(e.target.value)}
-            className="flex-1 px-3 py-2 rounded-lg border border-[var(--color-line)] bg-white text-sm"
+            className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-bg-sunken)] px-3 py-2 text-sm"
           />
-          <button onClick={setCustom} disabled={!customDate} className="px-3 py-2 rounded-lg text-xs font-medium bg-[var(--color-ink)] text-white disabled:opacity-30">
+          <button onClick={setCustom} disabled={!customDate} className="rounded-[var(--radius-md)] bg-[var(--color-ink)] px-4 py-2 text-xs font-medium text-[var(--color-bg)] disabled:opacity-30">
             Set
           </button>
         </div>
@@ -118,12 +116,25 @@ export function FollowUpScheduler({ person }: { person: Person }) {
           </button>
         </div>
       </div>
-      {flash && (
-        <div role="status" aria-live="polite" className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[var(--color-ink)] text-white px-5 py-2.5 rounded-full text-sm shadow-lg z-50">
-          {flash}
-        </div>
-      )}
+      {flash && <Toast>{flash}</Toast>}
     </>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden className="shrink-0">
+      <rect x="3.5" y="5" width="17" height="15" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M3.5 9h17M8 3.5v3M16 3.5v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function Toast({ children }: { children: React.ReactNode }) {
+  return (
+    <div role="status" aria-live="polite" className="animate-pop fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[var(--color-ink)] px-5 py-2.5 text-sm text-[var(--color-bg)] shadow-[var(--shadow-pop)]">
+      {children}
+    </div>
   );
 }
 

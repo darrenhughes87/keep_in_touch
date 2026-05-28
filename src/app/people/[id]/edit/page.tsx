@@ -33,7 +33,7 @@ export default async function EditPersonPage({ params }: { params: Promise<{ id:
   return (
     <>
       <TopNav title={`Edit ${person.name}`} back={`/people/${pid}`} />
-      <main className="max-w-md mx-auto px-4 pb-24 pt-2">
+      <main className="max-w-md mx-auto px-4 pad-nav pt-2">
         <form action={save} className="space-y-3 mt-2">
           <Field label="Name" name="name" defaultValue={person.name} required />
           <Field label="Nickname" name="nickname" defaultValue={person.nickname ?? ''} />
@@ -61,7 +61,7 @@ export default async function EditPersonPage({ params }: { params: Promise<{ id:
             <label className="text-xs uppercase tracking-wider text-[var(--color-ink-faint)]">Other notes</label>
             <textarea name="notes_facts" defaultValue={person.notes_facts ?? ''} rows={3} className="w-full mt-1 px-4 py-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-bg-card)]" />
           </div>
-          <button type="submit" className="w-full bg-[var(--color-ink)] text-white rounded-xl py-3 font-medium mt-4">
+          <button type="submit" className="mt-4 w-full rounded-[var(--radius-md)] bg-[var(--color-ink)] py-3 font-medium text-[var(--color-bg)] active:scale-[.99] transition-transform">
             Save
           </button>
         </form>

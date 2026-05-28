@@ -100,24 +100,34 @@ export function VoiceNoteInput({ onSave, placeholder = 'Add a note. Tap the mic 
   };
 
   return (
-    <div className="border border-[var(--color-line)] rounded-2xl p-3 bg-[var(--color-bg-card)]">
+    <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-bg-card)] p-3.5 shadow-[var(--shadow-card)] focus-within:border-[var(--color-accent-line)] transition-colors">
       <textarea
         value={text}
         onChange={e => { setText(e.target.value); setPreviousText(null); }}
         placeholder={placeholder}
         rows={3}
-        className="w-full resize-none focus:outline-none bg-transparent text-[15px]"
+        className="w-full resize-none bg-transparent text-[15px] leading-relaxed focus:outline-none placeholder:text-[var(--color-ink-ghost)]"
       />
-      <div className="flex items-center justify-between mt-2 gap-2 flex-wrap">
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           {supported ? (
             <button
               onClick={toggle}
               type="button"
-              className={`px-3 py-2 rounded-xl text-sm font-medium ${listening ? 'bg-[var(--color-warm-soft)] text-[var(--color-warm)]' : 'bg-stone-100 text-[var(--color-ink-soft)]'}`}
+              className={`flex items-center gap-1.5 rounded-[var(--radius-md)] px-3 py-2 text-sm font-medium transition-colors ${listening ? 'bg-[var(--color-warm-soft)] text-[var(--color-warm-ink)]' : 'bg-[var(--color-bg-sunken)] text-[var(--color-ink-soft)]'}`}
               aria-label={listening ? 'Stop dictation' : 'Start dictation'}
             >
-              {listening ? '● recording' : '🎙 dictate'}
+              {listening ? (
+                <><span className="h-2 w-2 animate-pulse rounded-full bg-[var(--color-warm)]" /> recording</>
+              ) : (
+                <>
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden>
+                    <rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" strokeWidth="1.6" />
+                    <path d="M6 11a6 6 0 0 0 12 0M12 17v3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  </svg>
+                  dictate
+                </>
+              )}
             </button>
           ) : (
             <span className="text-xs text-[var(--color-ink-faint)]">Voice not supported in this browser</span>
@@ -127,7 +137,7 @@ export function VoiceNoteInput({ onSave, placeholder = 'Add a note. Tap the mic 
               <button
                 onClick={undoPolish}
                 type="button"
-                className="px-3 py-2 rounded-xl text-sm font-medium bg-stone-100 text-[var(--color-ink-soft)]"
+                className="rounded-[var(--radius-md)] bg-[var(--color-bg-sunken)] px-3 py-2 text-sm font-medium text-[var(--color-ink-soft)]"
                 title="Restore the original text"
               >
                 ↶ undo
@@ -137,10 +147,14 @@ export function VoiceNoteInput({ onSave, placeholder = 'Add a note. Tap the mic 
                 onClick={polish}
                 type="button"
                 disabled={polishing}
-                className="px-3 py-2 rounded-xl text-sm font-medium bg-[var(--color-accent-soft)] text-[var(--color-accent)] disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--color-accent-soft)] px-3 py-2 text-sm font-medium text-[var(--color-accent-ink)] disabled:opacity-50"
                 title="Clean up rambling and distill the meaning. British English."
               >
-                {polishing ? 'Polishing…' : '✨ polish'}
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden>
+                  <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3Z" />
+                  <path d="M18 14l.8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8L18 14Z" />
+                </svg>
+                {polishing ? 'Polishing…' : 'polish'}
               </button>
             )
           )}
@@ -148,7 +162,7 @@ export function VoiceNoteInput({ onSave, placeholder = 'Add a note. Tap the mic 
         <button
           onClick={save}
           disabled={!text.trim() || saving}
-          className="px-4 py-2 rounded-xl text-sm font-medium bg-[var(--color-ink)] text-white disabled:opacity-30"
+          className="rounded-[var(--radius-md)] bg-[var(--color-ink)] px-4 py-2 text-sm font-medium text-[var(--color-bg)] disabled:opacity-30"
         >
           {saving ? 'Saving…' : 'Save'}
         </button>

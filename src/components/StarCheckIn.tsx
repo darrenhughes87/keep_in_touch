@@ -29,22 +29,28 @@ export function StarCheckIn({ person }: { person: Person }) {
   }
 
   return (
-    <article className="bg-amber-50 border border-amber-100 rounded-2xl p-4 mb-3">
-      <div className="flex items-center gap-3 mb-2">
-        <PersonAvatar person={person} size={36} />
-        <div className="flex-1 min-w-0">
+    <article className="animate-rise mb-3 rounded-[var(--radius-card)] border border-[var(--color-star-soft)] bg-[var(--color-star-soft)] p-4">
+      <div className="mb-3 flex items-center gap-3">
+        <PersonAvatar person={person} size={38} />
+        <div className="min-w-0 flex-1">
           <p className="text-sm">
             Still keeping in touch with <span className="font-medium">{first}</span>?
           </p>
-          <p className="text-xs text-amber-700/80 mt-0.5">They've been starred — we just want to make sure that's still right.</p>
+          <p className="mt-0.5 text-xs text-[var(--color-ink-faint)]">Starred — just checking that's still right.</p>
         </div>
-        <span className="text-amber-500 text-lg" aria-hidden>★</span>
+        <span className="text-lg text-[var(--color-star)]" aria-hidden>★</span>
       </div>
       <div className="flex gap-2">
-        <button onClick={yesStill} className="flex-1 px-3 py-2 rounded-xl text-sm font-medium bg-white border border-amber-200 text-amber-900">
+        <button
+          onClick={yesStill}
+          className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-bg-card)] px-3 py-2.5 text-sm font-medium text-[var(--color-ink)] active:scale-[.98] transition-transform"
+        >
           Yes, still close
         </button>
-        <button onClick={noUnstar} className="flex-1 px-3 py-2 rounded-xl text-sm font-medium bg-white border border-stone-200 text-stone-700">
+        <button
+          onClick={noUnstar}
+          className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-bg-card)] px-3 py-2.5 text-sm font-medium text-[var(--color-ink-soft)] active:scale-[.98] transition-transform"
+        >
           Surface them again
         </button>
       </div>

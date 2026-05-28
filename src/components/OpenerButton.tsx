@@ -31,22 +31,31 @@ export function OpenerButton({ personId, personName }: { personId: number; perso
         <button
           onClick={generate}
           disabled={loading}
-          className="w-full text-sm py-2 px-3 rounded-xl border border-dashed border-[var(--color-line)] text-[var(--color-ink-soft)] active:bg-stone-100"
+          className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-dashed border-[var(--color-line)] px-3 py-2.5 text-sm text-[var(--color-ink-soft)] active:bg-[var(--color-bg-sunken)] transition-colors"
         >
-          {loading ? 'Thinking…' : '💡 Suggest an opener'}
+          {loading ? (
+            'Thinking…'
+          ) : (
+            <>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden>
+                <path d="M9 17h6M10 20h4M12 3a6 6 0 0 1 3.6 10.8c-.6.5-.9 1-.9 1.7H9.3c0-.7-.3-1.2-.9-1.7A6 6 0 0 1 12 3Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Suggest an opener
+            </>
+          )}
         </button>
       )}
       {text && (
-        <div className="bg-[var(--color-accent-soft)] rounded-xl p-3">
-          <p className="text-sm text-[var(--color-ink)]">{text}</p>
-          <div className="flex gap-2 mt-2">
-            <button onClick={copy} className="text-xs px-3 py-1.5 rounded-lg bg-white border border-[var(--color-line)]">
+        <div className="animate-pop rounded-[var(--radius-lg)] border border-[var(--color-accent-line)] bg-[var(--color-accent-soft)] p-3.5">
+          <p className="text-sm leading-relaxed text-[var(--color-ink)]">{text}</p>
+          <div className="mt-3 flex gap-2">
+            <button onClick={copy} className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-bg-card)] px-3 py-1.5 text-xs font-medium">
               {copied ? '✓ copied' : 'Copy'}
             </button>
-            <button onClick={generate} disabled={loading} className="text-xs px-3 py-1.5 rounded-lg bg-white border border-[var(--color-line)]">
+            <button onClick={generate} disabled={loading} className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-bg-card)] px-3 py-1.5 text-xs font-medium">
               Another
             </button>
-            <button onClick={() => setText('')} className="text-xs px-3 py-1.5 rounded-lg text-[var(--color-ink-faint)]">
+            <button onClick={() => setText('')} className="ml-auto rounded-[var(--radius-md)] px-3 py-1.5 text-xs text-[var(--color-ink-faint)]">
               Close
             </button>
           </div>

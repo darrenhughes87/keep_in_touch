@@ -11,7 +11,7 @@ export default async function SharePage({ searchParams }: { searchParams: Promis
   return (
     <>
       <TopNav title="Share into KIT" back="/" />
-      <main className="max-w-md mx-auto px-4 pb-24 pt-4">
+      <main className="max-w-md mx-auto px-4 pad-nav pt-4">
         <ShareTargetCapture initialText={body} />
       </main>
     </>

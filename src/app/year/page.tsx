@@ -22,22 +22,22 @@ export default async function YearPage() {
   return (
     <>
       <TopNav title={`${year}`} back="/settings" />
-      <main className="max-w-md mx-auto px-4 pb-24 pt-2">
+      <main className="max-w-md mx-auto px-4 pad-nav pt-2">
         <section className="mt-4">
-          <h2 className="text-xs uppercase tracking-wider text-[var(--color-ink-faint)] mb-2">This year</h2>
-          <div className="bg-[var(--color-bg-card)] border border-[var(--color-line)] rounded-2xl p-5">
-            <p className="text-3xl font-serif">{interactions.total}</p>
-            <p className="text-sm text-[var(--color-ink-soft)]">reach-outs to {interactions.people} people</p>
+          <h2 className="eyebrow">This year</h2>
+          <div className="animate-rise rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-bg-card)] p-5 shadow-[var(--shadow-card)]">
+            <p className="font-serif text-4xl font-medium tracking-tight">{interactions.total}</p>
+            <p className="mt-0.5 text-sm text-[var(--color-ink-soft)]">reach-outs to {interactions.people} {interactions.people === 1 ? 'person' : 'people'}</p>
           </div>
         </section>
 
         {topPeople.length > 0 && (
-          <section className="mt-6">
-            <h2 className="text-xs uppercase tracking-wider text-[var(--color-ink-faint)] mb-2">Most often</h2>
-            <ul className="space-y-1">
+          <section className="mt-7">
+            <h2 className="eyebrow">Most often</h2>
+            <ul className="overflow-hidden rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-bg-card)] shadow-[var(--shadow-card)] divide-y divide-[var(--color-line-soft)]">
               {topPeople.map(p => (
-                <li key={p.id} className="flex justify-between bg-[var(--color-bg-card)] border border-[var(--color-line)] rounded-xl px-4 py-3 text-sm">
-                  <span>{p.name}</span>
+                <li key={p.id} className="flex justify-between px-4 py-3 text-sm">
+                  <span className="font-medium">{p.name}</span>
                   <span className="text-[var(--color-ink-faint)]">{p.count}</span>
                 </li>
               ))}
@@ -46,13 +46,13 @@ export default async function YearPage() {
         )}
 
         {moments.length > 0 && (
-          <section className="mt-6">
-            <h2 className="text-xs uppercase tracking-wider text-[var(--color-ink-faint)] mb-2">Moments</h2>
+          <section className="mt-7">
+            <h2 className="eyebrow">Moments</h2>
             <ul className="space-y-2">
               {moments.map(m => (
-                <li key={m.id} className="bg-[var(--color-warm-soft)] rounded-xl px-3 py-2 text-sm">
-                  <p>{m.body}</p>
-                  <p className="text-xs text-[var(--color-ink-faint)] mt-1">{m.created_at.slice(0, 10)}</p>
+                <li key={m.id} className="rounded-[var(--radius-md)] border border-[var(--color-warm-soft)] bg-[var(--color-warm-soft)] px-3.5 py-3 text-sm text-[var(--color-warm-ink)]">
+                  <p className="leading-relaxed">{m.body}</p>
+                  <p className="mt-1 text-xs opacity-70">{m.created_at.slice(0, 10)}</p>
                 </li>
               ))}
             </ul>
@@ -60,7 +60,7 @@ export default async function YearPage() {
         )}
 
         {moments.length === 0 && interactions.total === 0 && (
-          <p className="text-center text-[var(--color-ink-faint)] mt-12 text-sm">Nothing logged yet this year.</p>
+          <p className="mt-14 text-center text-sm text-[var(--color-ink-faint)]">Nothing logged yet this year.</p>
         )}
       </main>
     </>

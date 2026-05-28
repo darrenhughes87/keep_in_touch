@@ -24,7 +24,12 @@ export function SuggestionCard({ suggestionId, person, daysSince, latestNote, co
 
   if (reached) {
     return (
-      <article className="bg-[var(--color-accent-soft)] rounded-2xl border border-[var(--color-accent-soft)] p-4 text-center">
+      <article className="animate-pop rounded-[var(--radius-card)] border border-[var(--color-good-soft)] bg-[var(--color-good-soft)] px-4 py-5 text-center">
+        <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-good)]/15 text-[var(--color-good)]">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden>
+            <path d="m5 12.5 4.5 4.5L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
         <p className="text-sm text-[var(--color-ink)]">Nice. {person.name.split(' ')[0]} marked off for today.</p>
       </article>
     );
@@ -42,29 +47,46 @@ export function SuggestionCard({ suggestionId, person, daysSince, latestNote, co
     : `You and ${person.name.split(' ')[0]} usually chat every ${dayWord(person.cadence_days)}. It's been ${daysSince} days.`;
 
   return (
-    <article className={`rounded-2xl border p-4 space-y-3 shadow-sm ${followUpDue ? 'bg-[var(--color-accent-soft)] border-[var(--color-accent-soft)]' : 'bg-[var(--color-bg-card)] border-[var(--color-line)]'}`}>
-      <Link href={`/people/${person.id}`} className="flex items-center gap-3">
-        <PersonAvatar person={person} size={48} />
-        <div className="flex-1 min-w-0">
-          <div className="font-medium truncate">{person.name}</div>
-          {person.nickname && <div className="text-xs text-[var(--color-ink-faint)]">{person.nickname}</div>}
-        </div>
-      </Link>
-      <p className="text-sm text-[var(--color-ink-soft)]">{cadenceLine}</p>
+    <article
+      className={`animate-rise space-y-3.5 rounded-[var(--radius-card)] border p-4 shadow-[var(--shadow-card)] ${
+        followUpDue
+          ? 'border-[var(--color-accent-line)] bg-[var(--color-accent-soft)]'
+          : 'border-[var(--color-line)] bg-[var(--color-bg-card)]'
+      }`}
+    >
+      <div className="flex items-center gap-3">
+        <Link href={`/people/${person.id}`} className="flex min-w-0 flex-1 items-center gap-3">
+          <PersonAvatar person={person} size={48} />
+          <div className="min-w-0 flex-1">
+            <div className="truncate font-medium">{person.name}</div>
+            {person.nickname && <div className="text-xs text-[var(--color-ink-faint)]">{person.nickname}</div>}
+          </div>
+        </Link>
+        {followUpDue && (
+          <span className="shrink-0 rounded-full bg-[var(--color-accent)]/12 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-accent-ink)]">
+            Follow up
+          </span>
+        )}
+      </div>
+
+      <p className="text-sm leading-relaxed text-[var(--color-ink-soft)]">{cadenceLine}</p>
+
       {latestNote && (
-        <p className="text-sm bg-[var(--color-bg)] rounded-xl px-3 py-2 border border-[var(--color-line)]">
+        <p className="rounded-[var(--radius-md)] border border-[var(--color-line-soft)] bg-[var(--color-bg-sunken)] px-3 py-2.5 text-sm leading-relaxed">
           <span className="text-[var(--color-ink-faint)]">
             Last time ({humanDaysAgo(latestNote.created_at)}):{' '}
           </span>
           {latestNote.body}
         </p>
       )}
-      <ContactButtons person={person} compact countryCode={countryCode} onAct={() => setTimeout(() => setReached(true), 800)} />
-      <div className="flex items-center justify-between text-xs">
-        <Link href={`/people/${person.id}`} className="text-[var(--color-ink-faint)] underline-offset-2 hover:underline">
-          Open
+
+      <ContactButtons person={person} countryCode={countryCode} onAct={() => setTimeout(() => setReached(true), 800)} />
+
+      <div className="flex items-center justify-between pt-0.5 text-xs">
+        <Link href={`/people/${person.id}`} className="text-[var(--color-ink-faint)] underline-offset-4 hover:underline">
+          Open profile
         </Link>
-        <button onClick={notNow} className="text-[var(--color-ink-faint)] underline-offset-2 hover:underline">
+        <button onClick={notNow} className="text-[var(--color-ink-faint)] underline-offset-4 hover:underline">
           not now
         </button>
       </div>

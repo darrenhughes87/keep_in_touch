@@ -46,10 +46,10 @@ export function LayerPicker({ personId, current }: { personId: number; current: 
             key={v}
             type="button"
             onClick={() => set(v)}
-            className={`text-xs px-2.5 py-1 rounded-full border ${
+            className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
               active
-                ? 'bg-[var(--color-ink)] text-white border-[var(--color-ink)]'
-                : 'border-[var(--color-line)] text-[var(--color-ink-soft)] active:bg-stone-100'
+                ? 'border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-bg)]'
+                : 'border-[var(--color-line)] text-[var(--color-ink-soft)] active:bg-[var(--color-bg-sunken)]'
             }`}
             aria-label={`Set layer to ${long}`}
           >

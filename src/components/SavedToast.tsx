@@ -29,8 +29,7 @@ export function SavedToast({ label = 'Saved' }: { label?: string }) {
     <div
       role="status"
       aria-live="polite"
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[var(--color-ink)] text-white px-5 py-2.5 rounded-full text-sm shadow-lg z-50 animate-[fadeIn_.15s_ease-out]"
-      style={{ animation: 'fadeIn .15s ease-out' }}
+      className="animate-pop fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[var(--color-ink)] px-5 py-2.5 text-sm text-[var(--color-bg)] shadow-[var(--shadow-pop)]"
     >
       {label}
     </div>

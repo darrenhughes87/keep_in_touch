@@ -30,10 +30,21 @@ export function BriefingButton() {
     <div className="mb-3">
       <button
         onClick={play}
-        className="w-full flex items-center justify-center gap-3 rounded-2xl border border-[var(--color-line)] bg-[var(--color-bg-card)] px-4 py-3 text-sm font-medium active:scale-[.99] transition"
-        aria-label="Play morning briefing"
+        className="flex w-full items-center justify-center gap-2.5 rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-bg-card)] px-4 py-3 text-sm font-medium shadow-[var(--shadow-card)] active:scale-[.99] transition-transform"
+        aria-label="Play briefing"
       >
-        <span className="text-lg" aria-hidden>{state === 'speaking' ? '⏸' : '▶'}</span>
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-accent-soft)] text-[var(--color-accent-ink)]" aria-hidden>
+          {state === 'speaking' ? (
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden>
+              <rect x="7" y="6" width="3.4" height="12" rx="1" />
+              <rect x="13.6" y="6" width="3.4" height="12" rx="1" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden>
+              <path d="M8 6.2c0-.8.9-1.3 1.6-.9l8 4.8a1 1 0 0 1 0 1.8l-8 4.8c-.7.4-1.6-.1-1.6-.9V6.2Z" />
+            </svg>
+          )}
+        </span>
         <span>
           {state === 'idle' && 'Listen (20s)'}
           {state === 'loading' && 'Preparing…'}
@@ -43,7 +54,7 @@ export function BriefingButton() {
         </span>
       </button>
       {script && state !== 'idle' && (
-        <p className="text-xs text-[var(--color-ink-faint)] mt-2 px-2">{script}</p>
+        <p className="mt-2 px-2 text-xs leading-relaxed text-[var(--color-ink-faint)]">{script}</p>
       )}
     </div>
   );

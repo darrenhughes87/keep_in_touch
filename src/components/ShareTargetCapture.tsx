@@ -28,23 +28,23 @@ export function ShareTargetCapture({ initialText }: { initialText: string }) {
 
   return (
     <div className="space-y-4">
-      <textarea value={text} onChange={e => setText(e.target.value)} rows={4} className="w-full px-4 py-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-bg-card)]" />
+      <textarea value={text} onChange={e => setText(e.target.value)} rows={4} className="field leading-relaxed" />
       <div>
-        <h3 className="text-xs uppercase tracking-wider text-[var(--color-ink-faint)] mb-2">Save to</h3>
-        <button onClick={() => setTarget('moment')} className={`block w-full text-left px-4 py-3 rounded-xl border ${target === 'moment' ? 'border-[var(--color-ink)] bg-[var(--color-bg-card)]' : 'border-[var(--color-line)]'} mb-2`}>
+        <h3 className="eyebrow">Save to</h3>
+        <button onClick={() => setTarget('moment')} className={`mb-2 block w-full rounded-[var(--radius-md)] border px-4 py-3 text-left transition-colors ${target === 'moment' ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)]' : 'border-[var(--color-line)] bg-[var(--color-bg-card)]'}`}>
           As a moment (private to you)
         </button>
-        <ul className="space-y-1 max-h-72 overflow-y-auto">
+        <ul className="max-h-72 space-y-1.5 overflow-y-auto">
           {people.map(p => (
             <li key={p.id}>
-              <button onClick={() => setTarget(p.id)} className={`block w-full text-left px-4 py-2 rounded-xl border ${target === p.id ? 'border-[var(--color-ink)] bg-[var(--color-bg-card)]' : 'border-[var(--color-line)]'}`}>
+              <button onClick={() => setTarget(p.id)} className={`block w-full rounded-[var(--radius-md)] border px-4 py-2.5 text-left transition-colors ${target === p.id ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)]' : 'border-[var(--color-line)] bg-[var(--color-bg-card)]'}`}>
                 {p.name}
               </button>
             </li>
           ))}
         </ul>
       </div>
-      <button onClick={save} disabled={target == null || !text.trim() || saving} className="w-full bg-[var(--color-ink)] text-white rounded-xl py-3 font-medium disabled:opacity-30">
+      <button onClick={save} disabled={target == null || !text.trim() || saving} className="w-full rounded-[var(--radius-md)] bg-[var(--color-ink)] py-3 font-medium text-[var(--color-bg)] transition-transform active:scale-[.99] disabled:opacity-30">
         {saving ? 'Saving…' : 'Save'}
       </button>
     </div>

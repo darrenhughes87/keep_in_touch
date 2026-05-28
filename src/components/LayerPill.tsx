@@ -3,13 +3,13 @@ import { LAYER_LABELS } from '@/lib/types';
 
 export function LayerPill({ layer }: { layer: Layer }) {
   const cls: Record<Layer, string> = {
-    inner: 'bg-[var(--color-warm-soft)] text-[var(--color-warm)]',
-    close: 'bg-[var(--color-accent-soft)] text-[var(--color-accent)]',
-    good: 'bg-stone-100 text-stone-700',
-    acquaintance: 'bg-stone-50 text-stone-500',
+    inner: 'bg-[var(--color-warm-soft)] text-[var(--color-warm-ink)]',
+    close: 'bg-[var(--color-accent-soft)] text-[var(--color-accent-ink)]',
+    good: 'bg-[var(--color-good-soft)] text-[var(--color-good)]',
+    acquaintance: 'bg-[var(--color-bg-sunken)] text-[var(--color-ink-faint)]',
   };
   return (
-    <span className={`text-xs px-2 py-0.5 rounded-full ${cls[layer]}`}>
+    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${cls[layer]}`}>
       {LAYER_LABELS[layer]}
     </span>
   );

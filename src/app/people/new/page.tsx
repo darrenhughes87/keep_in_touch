@@ -28,7 +28,7 @@ export default async function NewPersonPage() {
   return (
     <>
       <TopNav title="Add someone" back="/people" />
-      <main className="max-w-md mx-auto px-4 pb-24 pt-2">
+      <main className="max-w-md mx-auto px-4 pad-nav pt-2">
         <form action={add} className="space-y-4 mt-2">
           <Field label="Name" name="name" required autoFocus />
           <Field label="Nickname (optional)" name="nickname" />
@@ -42,9 +42,9 @@ export default async function NewPersonPage() {
                 ['good', 'Good friend', `every ~${s.cadence_good}d`],
                 ['acquaintance', 'Acquaintance', `every ~${s.cadence_acquaintance}d`],
               ] as const).map(([v, label, sub]) => (
-                <label key={v} className="border border-[var(--color-line)] rounded-xl p-3 has-[:checked]:border-[var(--color-ink)] has-[:checked]:bg-[var(--color-bg-card)] cursor-pointer">
+                <label key={v} className="cursor-pointer rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-bg-card)] p-3 transition-colors has-[:checked]:border-[var(--color-accent)] has-[:checked]:bg-[var(--color-accent-soft)]">
                   <input type="radio" name="layer" value={v} defaultChecked={v === 'close'} className="hidden" />
-                  <div className="font-medium text-sm">{label}</div>
+                  <div className="text-sm font-medium">{label}</div>
                   <div className="text-xs text-[var(--color-ink-faint)]">{sub}</div>
                 </label>
               ))}
@@ -56,7 +56,7 @@ export default async function NewPersonPage() {
           <Field label="Birthday (MM-DD or YYYY-MM-DD)" name="birthday" placeholder="03-14" />
           <Field label="How you met (optional)" name="how_we_met" />
 
-          <button type="submit" className="w-full bg-[var(--color-ink)] text-white rounded-xl py-3 font-medium mt-4">
+          <button type="submit" className="mt-4 w-full rounded-[var(--radius-md)] bg-[var(--color-ink)] py-3 font-medium text-[var(--color-bg)] active:scale-[.99] transition-transform">
             Save
           </button>
         </form>

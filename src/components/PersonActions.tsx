@@ -52,28 +52,28 @@ export function PersonActions({ person }: { person: Person }) {
 
   return (
     <>
-      <div className="mt-6 flex flex-wrap gap-2 text-xs">
-        <button onClick={logChat} className="px-3 py-1.5 rounded-full bg-stone-100 text-[var(--color-ink-soft)]">
+      <div className="mt-8 flex flex-wrap items-center gap-2 text-xs">
+        <button onClick={logChat} className="rounded-full bg-[var(--color-accent-soft)] px-3.5 py-2 font-medium text-[var(--color-accent-ink)] active:scale-95 transition-transform">
           Log a chat
         </button>
-        <button onClick={() => snooze(1, '1 hour')} className="px-3 py-1.5 rounded-full bg-stone-100 text-[var(--color-ink-soft)]">
+        <button onClick={() => snooze(1, '1 hour')} className="rounded-full bg-[var(--color-bg-sunken)] px-3.5 py-2 text-[var(--color-ink-soft)] active:scale-95 transition-transform">
           Snooze 1h
         </button>
-        <button onClick={() => snooze(24, '1 day')} className="px-3 py-1.5 rounded-full bg-stone-100 text-[var(--color-ink-soft)]">
+        <button onClick={() => snooze(24, '1 day')} className="rounded-full bg-[var(--color-bg-sunken)] px-3.5 py-2 text-[var(--color-ink-soft)] active:scale-95 transition-transform">
           Snooze 1d
         </button>
-        <button onClick={() => snooze(24 * 7, '1 week')} className="px-3 py-1.5 rounded-full bg-stone-100 text-[var(--color-ink-soft)]">
+        <button onClick={() => snooze(24 * 7, '1 week')} className="rounded-full bg-[var(--color-bg-sunken)] px-3.5 py-2 text-[var(--color-ink-soft)] active:scale-95 transition-transform">
           Snooze 1w
         </button>
-        <button onClick={archive} className="px-3 py-1.5 rounded-full text-[var(--color-ink-faint)] ml-auto">
+        <button onClick={archive} className="ml-auto rounded-full px-3 py-2 text-[var(--color-ink-faint)] active:scale-95 transition-transform">
           Archive
         </button>
-        <button onClick={deleteForever} className="px-3 py-1.5 rounded-full text-red-600">
+        <button onClick={deleteForever} className="rounded-full px-3 py-2 text-[var(--color-danger)] active:scale-95 transition-transform">
           Delete
         </button>
       </div>
       {toast && (
-        <div role="status" aria-live="polite" className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[var(--color-ink)] text-white px-5 py-2.5 rounded-full text-sm shadow-lg z-50">
+        <div role="status" aria-live="polite" className="animate-pop fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[var(--color-ink)] px-5 py-2.5 text-sm text-[var(--color-bg)] shadow-[var(--shadow-pop)]">
           {toast}
         </div>
       )}

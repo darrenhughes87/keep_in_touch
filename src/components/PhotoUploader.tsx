@@ -48,7 +48,7 @@ export function PhotoUploader({ person, size = 72 }: { person: Person; size?: nu
         type="button"
         onClick={() => fileRef.current?.click()}
         aria-label="Change photo"
-        className="block rounded-full overflow-hidden active:scale-95 transition"
+        className="block overflow-hidden rounded-full ring-1 ring-[var(--color-line)] active:scale-95 transition-transform"
         style={{ width: size, height: size }}
       >
         {/* PersonAvatar reads from /api/photo/<id>; bust cache via the stamp by mounting with key */}
@@ -56,8 +56,14 @@ export function PhotoUploader({ person, size = 72 }: { person: Person; size?: nu
           <PersonAvatar person={person} size={size} />
         </span>
       </button>
-      <span className="absolute -bottom-1 -right-1 bg-[var(--color-ink)] text-white rounded-full w-7 h-7 flex items-center justify-center text-xs pointer-events-none">
-        {busy ? '…' : '+'}
+      <span className="pointer-events-none absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-[var(--color-bg)] bg-[var(--color-ink)] text-[var(--color-bg)] shadow-[var(--shadow-card)]">
+        {busy ? (
+          <span className="text-xs">…</span>
+        ) : (
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden>
+            <path d="M12 5.5v13M5.5 12h13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        )}
       </span>
       <input
         ref={fileRef}
@@ -70,14 +76,14 @@ export function PhotoUploader({ person, size = 72 }: { person: Person; size?: nu
         <button
           type="button"
           onClick={remove}
-          className="absolute -top-2 -right-2 bg-white text-[var(--color-ink-faint)] border border-[var(--color-line)] rounded-full w-6 h-6 text-xs"
+          className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border border-[var(--color-line)] bg-[var(--color-bg-card)] text-sm leading-none text-[var(--color-ink-faint)] shadow-[var(--shadow-card)]"
           aria-label="Remove photo"
         >
           ×
         </button>
       )}
       {flash && (
-        <div role="status" aria-live="polite" className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[var(--color-ink)] text-white px-5 py-2.5 rounded-full text-sm shadow-lg z-50">
+        <div role="status" aria-live="polite" className="animate-pop fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[var(--color-ink)] px-5 py-2.5 text-sm text-[var(--color-bg)] shadow-[var(--shadow-pop)]">
           {flash}
         </div>
       )}

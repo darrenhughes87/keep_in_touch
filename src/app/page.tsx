@@ -52,10 +52,10 @@ export default async function Home() {
   return (
     <>
       <TopNav />
-      <main className="max-w-md mx-auto px-4 pb-24 pt-2">
-        <div className="py-6">
-          <p className="text-2xl font-serif tracking-tight">{greet}</p>
-          <p className="text-sm text-[var(--color-ink-soft)] mt-1">
+      <main className="max-w-md mx-auto px-4 pad-nav pt-2">
+        <div className="animate-rise py-6">
+          <p className="font-serif text-[28px] font-medium leading-tight tracking-tight">{greet}</p>
+          <p className="mt-1.5 text-sm text-[var(--color-ink-soft)]">
             {cards.length === 0
               ? "You're all caught up. Have a good day."
               : cards.length === 1
@@ -104,11 +104,19 @@ export default async function Home() {
 
         {bdays.length > 0 && (
           <section className="mt-8">
-            <h2 className="text-xs uppercase tracking-wider text-[var(--color-ink-faint)] mb-3">Birthdays this week</h2>
+            <h2 className="mb-2.5 px-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-faint)]">Birthdays this week</h2>
             <div className="space-y-2">
               {bdays.map(b => (
-                <Link key={b.id} href={`/people/${b.id}`} className="block bg-[var(--color-warm-soft)] text-[var(--color-warm)] rounded-2xl px-4 py-3 text-sm">
-                  🎂 {b.name}
+                <Link
+                  key={b.id}
+                  href={`/people/${b.id}`}
+                  className="flex items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--color-warm-soft)] bg-[var(--color-warm-soft)] px-4 py-3 text-sm text-[var(--color-warm-ink)] active:scale-[.99] transition-transform"
+                >
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden className="shrink-0">
+                    <path d="M5 13h14v6a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-6Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                    <path d="M4 13a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2M12 11V7M12 7a1.4 1.4 0 1 1 0-2.8c.6 0 .9.5.9 1.1 0 .9-.9 1.7-.9 1.7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span className="font-medium">{b.name}</span>
                 </Link>
               ))}
             </div>
@@ -116,10 +124,14 @@ export default async function Home() {
         )}
 
         {cards.length === 0 && (
-          <div className="mt-12 text-center text-[var(--color-ink-faint)]">
-            <p className="text-4xl">🌿</p>
-            <p className="mt-3 text-sm">Nothing pressing today.</p>
-            <Link href="/people" className="inline-block mt-6 text-sm text-[var(--color-accent)] underline-offset-2 hover:underline">
+          <div className="mt-14 flex flex-col items-center text-center text-[var(--color-ink-faint)]">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-good-soft)] text-[var(--color-good)]">
+              <svg viewBox="0 0 24 24" width="30" height="30" fill="none" aria-hidden>
+                <path d="M12 20s7-3.5 7-9.5A4.5 4.5 0 0 0 12 7a4.5 4.5 0 0 0-7 3.5C5 16.5 12 20 12 20Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <p className="mt-4 text-sm">Nothing pressing today.</p>
+            <Link href="/people" className="mt-5 text-sm text-[var(--color-accent-ink)] underline-offset-4 hover:underline">
               Browse everyone
             </Link>
           </div>

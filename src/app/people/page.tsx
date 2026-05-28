@@ -2,7 +2,6 @@ import { requireSession } from '@/lib/auth';
 import { peopleWithMeta } from '@/lib/queries';
 import { TopNav } from '@/components/TopNav';
 import { PersonAvatar } from '@/components/PersonAvatar';
-import { LayerPill } from '@/components/LayerPill';
 import Link from 'next/link';
 import { humanDaysAgo } from '@/lib/time';
 import type { Layer } from '@/lib/types';
@@ -13,9 +12,7 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
   const all = peopleWithMeta();
 
   // Note-aware search: also include people whose notes match the query.
-  // We compute the set via listPeople({search}) and then filter the
-  // already-loaded `all` (which carries last_contact + days_since metadata).
-  const { searchNotes, listPeople } = await import('@/lib/queries');
+  const { listPeople } = await import('@/lib/queries');
   const noteHits = sp.q ? new Set(listPeople({ search: sp.q }).map(p => p.id)) : null;
 
   const filtered = all.filter(p => {
@@ -29,90 +26,122 @@ export default async function PeoplePage({ searchParams }: { searchParams: Promi
     }
     return true;
   }).sort((a, b) => {
-    // Starred people sink to the bottom of the list — they're "handled".
     if (!!a.starred !== !!b.starred) return a.starred ? 1 : -1;
-    // Otherwise sort by drift descending.
     const ra = a.days_since == null ? Infinity : a.days_since / a.cadence_days;
     const rb = b.days_since == null ? Infinity : b.days_since / b.cadence_days;
     return rb - ra;
   });
 
+  const filters = ['all', 'inner', 'close', 'good', 'acquaintance'] as const;
+
   return (
     <>
       <TopNav title="People" back="/" />
-      <main className="max-w-md mx-auto px-4 pb-24">
-        <div className="flex items-center justify-end gap-3 mt-3 text-xs">
-          <Link href="/import" className="text-[var(--color-accent)] underline-offset-2 hover:underline">
-            Import from contacts
-          </Link>
-          <Link href="/people/new" className="text-[var(--color-accent)] underline-offset-2 hover:underline">
-            Add manually
-          </Link>
-        </div>
-        <form className="mt-3" action="/people" method="get">
+      <main className="max-w-md mx-auto px-4 pad-nav pt-3">
+        {/* Search */}
+        <form action="/people" method="get">
           {sp.layer && <input type="hidden" name="layer" value={sp.layer} />}
-          <input
-            name="q"
-            defaultValue={sp.q ?? ''}
-            placeholder="Search names or memories…"
-            className="w-full px-4 py-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-bg-card)]"
-          />
+          <div className="relative">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-ink-ghost)]" aria-hidden>
+              <circle cx="10.5" cy="10.5" r="6" stroke="currentColor" strokeWidth="1.6" />
+              <path d="m15.5 15.5 4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+            <input
+              name="q"
+              defaultValue={sp.q ?? ''}
+              placeholder="Search names or memories…"
+              className="w-full rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-bg-card)] py-3 pl-11 pr-4 placeholder:text-[var(--color-ink-ghost)] shadow-[var(--shadow-card)]"
+            />
+          </div>
         </form>
 
-        <div className="flex gap-2 overflow-x-auto mt-3 -mx-1 px-1 pb-1">
-          {(['all', 'inner', 'close', 'good', 'acquaintance'] as const).map(l => {
+        {/* Filter chips */}
+        <div className="mt-3 -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+          {filters.map(l => {
             const active = (sp.layer ?? 'all') === l && sp.starred !== '1';
             const href = l === 'all' ? '/people' : `/people?layer=${l}`;
             return (
-              <Link key={l} href={href} className={`text-xs whitespace-nowrap px-3 py-1.5 rounded-full border ${active ? 'bg-[var(--color-ink)] text-white border-[var(--color-ink)]' : 'border-[var(--color-line)] text-[var(--color-ink-soft)]'}`}>
-                {l === 'all' ? 'All' : l[0].toUpperCase() + l.slice(1)}
-              </Link>
+              <Chip key={l} href={href} active={active}>
+                {l === 'all' ? 'Everyone' : l[0].toUpperCase() + l.slice(1)}
+              </Chip>
             );
           })}
-          <Link
-            href="/people?starred=1"
-            className={`text-xs whitespace-nowrap px-3 py-1.5 rounded-full border ${sp.starred === '1' ? 'bg-amber-500 text-white border-amber-500' : 'border-[var(--color-line)] text-[var(--color-ink-soft)]'}`}
-          >
+          <Chip href="/people?starred=1" active={sp.starred === '1'} star>
             ★ Starred
-          </Link>
+          </Chip>
         </div>
 
-        <p className="text-xs text-[var(--color-ink-faint)] mt-3">{filtered.length} {filtered.length === 1 ? 'person' : 'people'}</p>
+        <p className="mt-4 px-1 text-xs text-[var(--color-ink-faint)]">
+          {filtered.length} {filtered.length === 1 ? 'person' : 'people'}
+        </p>
 
-        <ul className="mt-2 space-y-1">
-          {filtered.map(p => (
-            <li key={p.id}>
-              <Link href={`/people/${p.id}`} className="flex items-center gap-3 py-3 px-2 rounded-xl active:bg-stone-100">
-                <PersonAvatar person={p} size={40} />
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate flex items-center gap-1.5">
-                    {p.starred ? <span className="text-amber-500 text-sm" aria-label="starred">★</span> : null}
-                    <span className="truncate">{p.name}</span>
+        <ul className="mt-1.5 divide-y divide-[var(--color-line-soft)] overflow-hidden rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-bg-card)] shadow-[var(--shadow-card)]">
+          {filtered.map(p => {
+            const drifting = !p.starred && p.days_since != null && p.days_since > p.cadence_days * 1.5;
+            return (
+              <li key={p.id}>
+                <Link href={`/people/${p.id}`} className="flex items-center gap-3 px-3.5 py-3 active:bg-[var(--color-bg-sunken)] transition-colors">
+                  <PersonAvatar person={p} size={44} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 truncate">
+                      {p.starred && <span className="text-[var(--color-star)] text-sm" aria-label="starred">★</span>}
+                      <span className="truncate font-medium">{p.name}</span>
+                    </div>
+                    <div className="mt-0.5 text-xs text-[var(--color-ink-faint)]">
+                      {humanDaysAgo(p.last_contact)} · {p.layer}
+                    </div>
                   </div>
-                  <div className="text-xs text-[var(--color-ink-faint)] mt-0.5">
-                    {humanDaysAgo(p.last_contact)} · {p.layer}
-                  </div>
-                </div>
-                {!p.starred && p.days_since != null && p.days_since > p.cadence_days * 1.5 && (
-                  <span className="text-[10px] text-[var(--color-warm)]">drifting</span>
-                )}
-              </Link>
-            </li>
-          ))}
+                  {drifting && (
+                    <span className="rounded-full bg-[var(--color-warm-soft)] px-2 py-0.5 text-[10px] font-medium text-[var(--color-warm-ink)]">
+                      drifting
+                    </span>
+                  )}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
 
         {filtered.length === 0 && (
-          <div className="text-center text-[var(--color-ink-faint)] mt-12">
+          <div className="mt-14 text-center text-[var(--color-ink-faint)]">
             <p className="text-sm">No one matches.</p>
+            <div className="mt-5 flex justify-center gap-4 text-sm">
+              <Link href="/import" className="text-[var(--color-accent-ink)] underline-offset-4 hover:underline">Import contacts</Link>
+              <Link href="/people/new" className="text-[var(--color-accent-ink)] underline-offset-4 hover:underline">Add manually</Link>
+            </div>
           </div>
         )}
 
-        <div className="fixed bottom-6 right-6 z-20">
-          <Link href="/people/new" className="bg-[var(--color-ink)] text-white rounded-full w-14 h-14 flex items-center justify-center text-2xl shadow-lg active:scale-95">
-            +
-          </Link>
-        </div>
+        {filtered.length > 0 && (
+          <div className="mt-5 flex justify-center">
+            <Link href="/import" className="text-xs text-[var(--color-ink-faint)] underline-offset-4 hover:underline">
+              Import from contacts
+            </Link>
+          </div>
+        )}
       </main>
+
+      {/* FAB — sits above the tab bar */}
+      <Link
+        href="/people/new"
+        aria-label="Add person"
+        className="fixed right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-accent)] text-white shadow-[var(--shadow-raised)] active:scale-95 transition-transform"
+        style={{ bottom: 'calc(5.5rem + env(safe-area-inset-bottom))' }}
+      >
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" aria-hidden>
+          <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      </Link>
     </>
   );
+}
+
+function Chip({ href, active, star, children }: { href: string; active: boolean; star?: boolean; children: React.ReactNode }) {
+  const base = 'whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors';
+  const cls = active
+    ? star
+      ? 'border-[var(--color-star)] bg-[var(--color-star)] text-white'
+      : 'border-[var(--color-ink)] bg-[var(--color-ink)] text-white'
+    : 'border-[var(--color-line)] bg-[var(--color-bg-card)] text-[var(--color-ink-soft)]';
+  return <Link href={href} className={`${base} ${cls}`}>{children}</Link>;
 }

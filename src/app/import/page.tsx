@@ -7,7 +7,7 @@ export default async function ImportPage() {
   return (
     <>
       <TopNav title="Import contacts" back="/settings" />
-      <main className="max-w-md mx-auto px-4 pb-24 pt-2">
+      <main className="max-w-md mx-auto px-4 pad-nav pt-2">
         <ImportFlow />
       </main>
     </>

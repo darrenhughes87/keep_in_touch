@@ -2,7 +2,6 @@ import { requireSession } from '@/lib/auth';
 import { TopNav } from '@/components/TopNav';
 import { getPerson, listNotes, listInteractions, lastContact, getSettings } from '@/lib/queries';
 import { notFound } from 'next/navigation';
-import { PersonAvatar } from '@/components/PersonAvatar';
 import { PhotoUploader } from '@/components/PhotoUploader';
 import { SavedToast } from '@/components/SavedToast';
 import { StarToggle } from '@/components/StarToggle';
@@ -28,56 +27,56 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const interactions = listInteractions(pid, 12);
   const settings = getSettings();
   const lc = lastContact(pid);
-  const daysSince = lc ? Math.floor((Date.now() - new Date(lc).getTime()) / 86_400_000) : null;
   const bday = daysUntilBirthday(person.birthday);
+  const snoozed = person.snoozed_until && new Date(person.snoozed_until) > new Date();
 
   return (
     <>
       <TopNav title={person.name} back="/people" />
       <Suspense fallback={null}><SavedToast /></Suspense>
-      <main className="max-w-md mx-auto px-4 pb-32">
-        <div className="flex items-start gap-4 py-5">
-          <PhotoUploader person={person} size={72} />
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start gap-2">
-              <h1 className="text-xl font-medium truncate flex-1">{person.name}</h1>
-              <StarToggle personId={person.id} starred={!!person.starred} firstName={person.name.split(' ')[0]} />
+      <main className="max-w-md mx-auto px-4 pad-nav">
+
+        {/* Identity card */}
+        <section className="mt-3 rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-bg-card)] p-5 shadow-[var(--shadow-card)] animate-rise">
+          <div className="flex items-start gap-4">
+            <PhotoUploader person={person} size={76} />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-start gap-2">
+                <h1 className="flex-1 truncate font-serif text-[22px] font-medium leading-tight">{person.name}</h1>
+                <StarToggle personId={person.id} starred={!!person.starred} firstName={person.name.split(' ')[0]} />
+              </div>
+              {person.nickname && <p className="text-sm text-[var(--color-ink-faint)]">“{person.nickname}”</p>}
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <LayerPill layer={person.layer} />
+                <span className="text-xs text-[var(--color-ink-faint)]">
+                  {person.starred ? 'starred · skipping suggestions' : `every ~${person.cadence_days}d`}
+                </span>
+              </div>
+              <LayerPicker personId={person.id} current={person.layer} />
             </div>
-            {person.nickname && <p className="text-sm text-[var(--color-ink-faint)]">"{person.nickname}"</p>}
-            <div className="mt-1 flex items-center gap-2 flex-wrap">
-              <LayerPill layer={person.layer} />
-              <span className="text-xs text-[var(--color-ink-faint)]">
-                {person.starred ? 'starred · skipping daily suggestions' : `every ~${person.cadence_days}d`}
-              </span>
-            </div>
-            <LayerPicker personId={person.id} current={person.layer} />
           </div>
-        </div>
 
-        <p className="text-sm text-[var(--color-ink-soft)]">
-          Last contact: <span className="text-[var(--color-ink)]">{humanDaysAgo(lc)}</span>
-          {bday !== null && bday <= 30 && (
-            <span className="ml-2 text-[var(--color-warm)]">· 🎂 in {bday}d</span>
-          )}
-          {person.snoozed_until && new Date(person.snoozed_until) > new Date() && (
-            <span className="ml-2 text-[var(--color-ink-faint)]">· snoozed</span>
-          )}
-        </p>
+          <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-[var(--color-line-soft)] pt-3 text-sm text-[var(--color-ink-soft)]">
+            <span>Last contact: <span className="text-[var(--color-ink)]">{humanDaysAgo(lc)}</span></span>
+            {bday !== null && bday <= 30 && <span className="text-[var(--color-warm-ink)]">· 🎂 in {bday}d</span>}
+            {snoozed && <span className="text-[var(--color-ink-faint)]">· snoozed</span>}
+          </div>
+        </section>
 
-        <div className="mt-4">
+        {/* Reach out */}
+        <section className="mt-5">
           <ContactButtons person={person} countryCode={settings.default_country_code} />
-        </div>
-
-        <OpenerButton personId={person.id} personName={person.name} />
+          <OpenerButton personId={person.id} personName={person.name} />
+        </section>
 
         <FollowUpScheduler person={person} />
 
         <NoteSection personId={person.id} initialNotes={notes} />
 
-        {(person.partner_kids || person.how_we_met || person.notes_facts) && (
-          <section className="mt-6">
-            <h2 className="text-xs uppercase tracking-wider text-[var(--color-ink-faint)] mb-2">Facts</h2>
-            <dl className="bg-[var(--color-bg-card)] rounded-2xl border border-[var(--color-line)] divide-y divide-[var(--color-line)] text-sm">
+        {(person.partner_kids || person.how_we_met || person.notes_facts || person.birthday || person.phone || person.email) && (
+          <section className="mt-7">
+            <SectionLabel>Facts</SectionLabel>
+            <dl className="divide-y divide-[var(--color-line-soft)] overflow-hidden rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-bg-card)] text-sm shadow-[var(--shadow-card)]">
               {person.partner_kids && <Row label="Family">{person.partner_kids}</Row>}
               {person.how_we_met && <Row label="How we met">{person.how_we_met}</Row>}
               {person.notes_facts && <Row label="Notes">{person.notes_facts}</Row>}
@@ -89,11 +88,11 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         )}
 
         {interactions.length > 0 && (
-          <section className="mt-6">
-            <h2 className="text-xs uppercase tracking-wider text-[var(--color-ink-faint)] mb-2">Recent contact</h2>
-            <ul className="space-y-1 text-sm text-[var(--color-ink-soft)]">
+          <section className="mt-7">
+            <SectionLabel>Recent contact</SectionLabel>
+            <ul className="divide-y divide-[var(--color-line-soft)] overflow-hidden rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-bg-card)] text-sm shadow-[var(--shadow-card)]">
               {interactions.map(i => (
-                <li key={i.id} className="flex justify-between">
+                <li key={i.id} className="flex justify-between px-4 py-2.5 text-[var(--color-ink-soft)]">
                   <span>{interactionLabel(i.channel, i.origin)}</span>
                   <span className="text-[var(--color-ink-faint)]">{humanDaysAgo(i.happened_at)}</span>
                 </li>
@@ -104,8 +103,8 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
 
         <PersonActions person={person} />
 
-        <div className="text-center mt-10">
-          <Link href={`/people/${person.id}/edit`} className="text-sm text-[var(--color-ink-faint)] underline-offset-2 hover:underline">
+        <div className="mt-9 text-center">
+          <Link href={`/people/${person.id}/edit`} className="text-sm text-[var(--color-ink-faint)] underline-offset-4 hover:underline">
             Edit details
           </Link>
         </div>
@@ -114,18 +113,20 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   );
 }
 
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return <h2 className="mb-2.5 px-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-faint)]">{children}</h2>;
+}
+
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="px-4 py-3 flex gap-3">
-      <dt className="w-24 text-[var(--color-ink-faint)] text-xs uppercase tracking-wider">{label}</dt>
-      <dd className="flex-1">{children}</dd>
+    <div className="flex gap-3 px-4 py-3">
+      <dt className="w-24 shrink-0 text-[11px] uppercase tracking-wider text-[var(--color-ink-faint)]">{label}</dt>
+      <dd className="flex-1 text-[var(--color-ink)]">{children}</dd>
     </div>
   );
 }
 
 function interactionLabel(channel: string, origin: string): string {
-  // Manual-log entries (the "Log a chat" button) just say "chat" since we
-  // didn't actually ask which channel was used.
   if (origin === 'manual_log') return 'chat logged';
   switch (channel) {
     case 'whatsapp':  return 'WhatsApp';

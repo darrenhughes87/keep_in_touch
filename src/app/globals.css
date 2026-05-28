@@ -1,48 +1,197 @@
 @import "tailwindcss";
 
+/*
+  Keep In Touch — design system (calm & editorial, light).
+  v2 redesign. Token NAMES are preserved from v1 so every page keeps working;
+  values are retuned and new tokens are added. Light theme only by intent.
+*/
+
 @theme {
-  /* Soft, warm palette. Off-white background, charcoal text, muted accents */
-  --color-bg: oklch(98% 0.005 80);
-  --color-bg-card: oklch(100% 0 0);
-  --color-ink: oklch(22% 0.01 250);
-  --color-ink-soft: oklch(45% 0.01 250);
-  --color-ink-faint: oklch(65% 0.01 250);
-  --color-line: oklch(92% 0.005 250);
-  --color-accent: oklch(58% 0.12 180);       /* soft teal */
-  --color-accent-soft: oklch(94% 0.04 180);
-  --color-warm: oklch(70% 0.13 50);          /* terracotta for warmth */
-  --color-warm-soft: oklch(95% 0.04 50);
-  --color-good: oklch(60% 0.14 145);         /* sage green for "caught up" */
+  /* ---- Surfaces -------------------------------------------------------- */
+  /* Warm paper, not flat white. A faint amber cast reads as "notebook". */
+  --color-bg: oklch(98.4% 0.008 85);          /* page: warm ivory */
+  --color-bg-sunken: oklch(96.5% 0.012 85);   /* recessed wells, inputs */
+  --color-bg-card: oklch(99.6% 0.004 85);     /* raised cards */
+  --color-bg-elevated: oklch(100% 0 0);       /* popovers, sheets */
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  --font-serif: ui-serif, Georgia, "Iowan Old Style", "Apple Garamond", serif;
+  /* ---- Ink ------------------------------------------------------------- */
+  --color-ink: oklch(26% 0.018 265);          /* primary text, near-charcoal */
+  --color-ink-soft: oklch(46% 0.016 265);     /* secondary */
+  --color-ink-faint: oklch(62% 0.014 265);    /* tertiary, meta */
+  --color-ink-ghost: oklch(74% 0.012 265);    /* placeholders, disabled */
 
-  --radius-card: 1rem;
+  /* ---- Lines & shadows ------------------------------------------------- */
+  --color-line: oklch(91% 0.008 85);          /* hairlines */
+  --color-line-soft: oklch(94.5% 0.006 85);   /* faintest dividers */
+
+  /* ---- Accents --------------------------------------------------------- */
+  /* Teal = the "act" colour. Terracotta = warmth/birthdays. Sage = calm/done. */
+  --color-accent: oklch(55% 0.085 195);       /* deep, calm teal */
+  --color-accent-ink: oklch(38% 0.07 195);    /* teal text on light */
+  --color-accent-soft: oklch(95.5% 0.028 195);/* teal wash */
+  --color-accent-line: oklch(88% 0.04 195);
+
+  --color-warm: oklch(64% 0.12 48);           /* terracotta */
+  --color-warm-ink: oklch(50% 0.11 48);
+  --color-warm-soft: oklch(95.5% 0.032 55);
+
+  --color-good: oklch(58% 0.1 155);           /* sage, "caught up" */
+  --color-good-soft: oklch(95% 0.035 155);
+
+  --color-star: oklch(72% 0.13 75);           /* warm amber for stars */
+  --color-star-soft: oklch(95% 0.05 80);
+  --color-star-ghost: oklch(82% 0.03 80);     /* unstarred outline */
+
+  --color-danger: oklch(56% 0.16 27);         /* destructive actions */
+  --color-danger-soft: oklch(95% 0.04 27);
+
+  /* ---- Type ------------------------------------------------------------ */
+  /* Wired to next/font variables in layout.tsx, with graceful fallbacks. */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --font-serif: var(--font-fraunces), ui-serif, Georgia, "Iowan Old Style", "Apple Garamond", serif;
+
+  /* ---- Radius ---------------------------------------------------------- */
+  --radius-card: 1.25rem;
+  --radius-lg: 1rem;
+  --radius-md: 0.75rem;
+  --radius-pill: 999px;
+
+  /* ---- Shadows (soft, warm, low) -------------------------------------- */
+  --shadow-card: 0 1px 2px oklch(40% 0.02 85 / 0.04), 0 4px 16px oklch(40% 0.02 85 / 0.05);
+  --shadow-raised: 0 2px 6px oklch(40% 0.02 85 / 0.06), 0 12px 32px oklch(40% 0.02 85 / 0.08);
+  --shadow-pop: 0 8px 40px oklch(30% 0.02 85 / 0.14);
+
+  /* ---- Motion ---------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 html, body {
   background: var(--color-bg);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  /* A whisper of warmth at the top, so the page never feels like cold paper. */
+  background-image:
+    radial-gradient(120% 60% at 50% -10%, oklch(96% 0.03 70 / 0.5), transparent 60%);
+  background-attachment: fixed;
 }
 
 * { -webkit-tap-highlight-color: transparent; }
 
-/* Bigger touch targets on mobile */
-button, a[role="button"], [data-touch] {
-  min-height: 44px;
+::selection { background: var(--color-accent-soft); color: var(--color-accent-ink); }
+
+/* Headings lean editorial. */
+h1, h2, h3, .font-serif {
+  font-family: var(--font-serif);
+  letter-spacing: -0.012em;
 }
 
-/* Safe-area aware bottom padding (PWA on iOS/Android) */
-.safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
-.safe-top    { padding-top: max(1rem, env(safe-area-inset-top)); }
+/* Comfortable, thumb-friendly hit areas. */
+button, a[role="button"], [data-touch] { min-height: 44px; }
 
+/* Inputs: 16px to stop iOS zoom; calm wells. */
 input, textarea, select {
-  font-size: 16px; /* prevents iOS zoom */
+  font-size: 16px;
+  font-family: inherit;
 }
 
-@media (prefers-color-scheme: dark) {
-  /* Dark mode is intentionally not styled in v1; system OK for now */
+input:focus-visible, textarea:focus-visible, select:focus-visible,
+button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+
+/* Safe-area helpers (PWA). */
+.safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+.safe-top    { padding-top: max(0.5rem, env(safe-area-inset-top)); }
+.pad-nav     { padding-bottom: calc(5.25rem + env(safe-area-inset-bottom)); }
+
+/* ---- Reusable component classes ------------------------------------- */
+@layer components {
+  .card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+  .well {
+    background: var(--color-bg-sunken);
+    border: 1px solid var(--color-line-soft);
+    border-radius: var(--radius-lg);
+  }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 0.5rem;
+    min-height: 48px; padding: 0 1.1rem;
+    border-radius: var(--radius-pill);
+    font-weight: 550; font-size: 0.95rem;
+    transition: transform 0.12s var(--ease-out), background-color 0.18s var(--ease-soft), box-shadow 0.18s var(--ease-soft);
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--color-accent); color: oklch(99% 0.01 195); box-shadow: var(--shadow-card); }
+  .btn-quiet   { background: var(--color-bg-sunken); color: var(--color-ink-soft); border: 1px solid var(--color-line); }
+  .btn-ghost   { background: transparent; color: var(--color-ink-soft); }
+  .eyebrow {
+    margin-bottom: 0.625rem;
+    padding-inline: 0.25rem;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-ink-faint);
+  }
+  .field {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-line);
+    background: var(--color-bg-card);
+    transition: border-color 0.18s var(--ease-soft);
+  }
+  .field:focus { outline: none; border-color: var(--color-accent); }
+  .input, .select {
+    padding: 0.55rem 0.85rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-line);
+    background: var(--color-bg-sunken);
+    transition: border-color 0.18s var(--ease-soft);
+  }
+  .input:focus, .select:focus { outline: none; border-color: var(--color-accent); }
+  .select { width: 100%; }
+}
+
+/* ---- Motion utilities ------------------------------------------------ */
+@keyframes kit-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes kit-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes kit-pop {
+  0%   { opacity: 0; transform: translateY(12px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-rise { animation: kit-rise 0.5s var(--ease-out) both; }
+.animate-fade { animation: kit-fade 0.4s var(--ease-soft) both; }
+.animate-pop  { animation: kit-pop 0.32s var(--ease-out) both; }
+
+/* Stagger helper: set --i on each child. */
+.stagger > * { animation: kit-rise 0.5s var(--ease-out) both; animation-delay: calc(var(--i, 0) * 60ms); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

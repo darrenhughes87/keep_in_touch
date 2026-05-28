@@ -35,7 +35,7 @@ export default async function SettingsPage() {
     <>
       <TopNav title="Settings" back="/" />
       <Suspense fallback={null}><SavedToast /></Suspense>
-      <main className="max-w-md mx-auto px-4 pb-24 pt-2">
+      <main className="max-w-md mx-auto px-4 pad-nav pt-2">
         <form action={save} className="space-y-5 mt-3">
           <Section title="Greeting">
             <select name="greeting_tone" defaultValue={s.greeting_tone} className="select">
@@ -68,7 +68,7 @@ export default async function SettingsPage() {
               name="default_country_code"
               defaultValue={s.default_country_code}
               placeholder="+44"
-              className="px-3 py-2 rounded-lg border border-[var(--color-line)] bg-white w-32"
+              className="input w-32"
             />
           </Section>
 
@@ -93,38 +93,30 @@ export default async function SettingsPage() {
             <label className="flex items-center gap-2"><input type="checkbox" name="moments_enabled" defaultChecked={!!s.moments_enabled} /> Ask me once a day if anything good happened</label>
           </Section>
 
-          <button type="submit" className="w-full bg-[var(--color-ink)] text-white rounded-xl py-3 font-medium">
+          <button type="submit" className="w-full rounded-[var(--radius-md)] bg-[var(--color-ink)] py-3 font-medium text-[var(--color-bg)] active:scale-[.99] transition-transform">
             Save
           </button>
         </form>
 
-        <hr className="my-8 border-[var(--color-line)]" />
+        <hr className="my-8 border-[var(--color-line-soft)]" />
 
-        <div className="space-y-3">
-          <Link href="/import" className="block bg-[var(--color-bg-card)] border border-[var(--color-line)] rounded-xl p-4">
-            <div className="font-medium">Import contacts (vCard)</div>
-            <div className="text-xs text-[var(--color-ink-faint)] mt-1">Upload a .vcf from your phone, pick who to track.</div>
-          </Link>
-          <Link href="/year" className="block bg-[var(--color-bg-card)] border border-[var(--color-line)] rounded-xl p-4">
-            <div className="font-medium">Year scroll</div>
-            <div className="text-xs text-[var(--color-ink-faint)] mt-1">Moments and reach-outs from this year.</div>
-          </Link>
-          <Link href="/api/export" className="block bg-[var(--color-bg-card)] border border-[var(--color-line)] rounded-xl p-4">
-            <div className="font-medium">Export everything (JSON)</div>
-            <div className="text-xs text-[var(--color-ink-faint)] mt-1">Your full database. Save it somewhere safe.</div>
-          </Link>
-          <div className="block bg-[var(--color-bg-card)] border border-[var(--color-line)] rounded-xl p-4">
+        <div className="overflow-hidden rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-bg-card)] shadow-[var(--shadow-card)] divide-y divide-[var(--color-line-soft)]">
+          <LinkRow href="/import" title="Import contacts (vCard)" sub="Upload a .vcf from your phone, pick who to track." />
+          <LinkRow href="/year" title="Year scroll" sub="Moments and reach-outs from this year." />
+          <LinkRow href="/api/export" title="Export everything (JSON)" sub="Your full database. Save it somewhere safe." />
+          <div className="px-4 py-3.5">
             <div className="font-medium">AI features</div>
-            <div className="text-xs text-[var(--color-ink-faint)] mt-1">
+            <div className="mt-1 text-xs leading-relaxed text-[var(--color-ink-faint)]">
               {haveAnthropicKey() ? '✓ Anthropic key detected — opener suggestions and briefings use Haiku.' : 'No Anthropic key set — opener suggestions and briefings use local templates.'}
             </div>
           </div>
-          <form action="/logout" method="POST">
-            <button type="submit" className="block w-full text-center text-sm text-[var(--color-ink-faint)] py-4">
-              Log out
-            </button>
-          </form>
         </div>
+
+        <form action="/logout" method="POST">
+          <button type="submit" className="block w-full py-5 text-center text-sm text-[var(--color-ink-faint)]">
+            Log out
+          </button>
+        </form>
       </main>
     </>
   );
@@ -133,9 +125,23 @@ export default async function SettingsPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="text-xs uppercase tracking-wider text-[var(--color-ink-faint)] mb-2">{title}</h2>
-      <div className="bg-[var(--color-bg-card)] border border-[var(--color-line)] rounded-xl p-3">{children}</div>
+      <h2 className="eyebrow">{title}</h2>
+      <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-bg-card)] p-3.5 shadow-[var(--shadow-card)]">{children}</div>
     </section>
+  );
+}
+
+function LinkRow({ href, title, sub }: { href: string; title: string; sub: string }) {
+  return (
+    <Link href={href} className="flex items-center justify-between gap-3 px-4 py-3.5 active:bg-[var(--color-bg-sunken)] transition-colors">
+      <div>
+        <div className="font-medium">{title}</div>
+        <div className="mt-0.5 text-xs text-[var(--color-ink-faint)]">{sub}</div>
+      </div>
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden className="shrink-0 text-[var(--color-ink-ghost)]">
+        <path d="m9.5 5 7 7-7 7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </Link>
   );
 }
 
@@ -143,7 +149,7 @@ function Field({ label, name, ...rest }: { label: string; name: string } & React
   return (
     <label className="block">
       <div className="text-[10px] uppercase tracking-wider text-[var(--color-ink-faint)]">{label}</div>
-      <input name={name} {...rest} className="w-full mt-1 px-3 py-2 rounded-lg border border-[var(--color-line)] bg-white" />
+      <input name={name} {...rest} className="input mt-1 w-full" />
     </label>
   );
 }

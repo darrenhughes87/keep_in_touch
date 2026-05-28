@@ -28,7 +28,7 @@ export function StarToggle({ personId, starred, firstName }: { personId: number;
       disabled={busy}
       aria-pressed={on}
       aria-label={on ? `Unstar ${firstName}` : `Star ${firstName}`}
-      className={`text-2xl px-2 -my-1 -mr-2 transition ${on ? 'text-amber-500' : 'text-stone-300 hover:text-stone-400'}`}
+      className={`-my-1 -mr-2 px-2 text-2xl transition-colors ${on ? 'text-[var(--color-star)]' : 'text-[var(--color-star-ghost)] hover:text-[var(--color-star)]'}`}
       title={on ? `Starred. ${firstName} won't be surfaced — we'll check in every 30 days.` : `Star ${firstName} to skip daily suggestions for people you already see often.`}
     >
       {on ? '★' : '☆'}

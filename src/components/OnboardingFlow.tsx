@@ -32,8 +32,8 @@ export function OnboardingFlow() {
   }
 
   return (
-    <main className="min-h-screen flex items-start justify-center p-6 pt-12">
-      <div className="w-full max-w-md space-y-6">
+    <main className="flex min-h-screen items-start justify-center p-6 pt-12">
+      <div className="animate-rise w-full max-w-md space-y-6">
         <div className="flex gap-1.5">
           {STEPS.map((_, i) => (
             <div key={i} className={`h-1 flex-1 rounded-full ${i <= step ? 'bg-[var(--color-ink)]' : 'bg-[var(--color-line)]'}`} />
@@ -42,7 +42,12 @@ export function OnboardingFlow() {
 
         {step === 0 && (
           <div>
-            <h1 className="text-3xl font-serif tracking-tight">Keep In Touch</h1>
+            <span className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-[14px] bg-[var(--color-accent)] text-white shadow-[var(--shadow-card)]">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden>
+                <path d="M6 6h12a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-6l-3.5 2.8V16H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" fill="currentColor" opacity="0.95" />
+              </svg>
+            </span>
+            <h1 className="font-serif text-3xl font-medium tracking-tight">Keep In Touch</h1>
             <p className="mt-4 text-[var(--color-ink-soft)]">
               This is just for you. Nobody else sees what's in here.
             </p>
@@ -52,7 +57,7 @@ export function OnboardingFlow() {
             <p className="mt-3 text-[var(--color-ink-soft)]">
               Two short steps and we're in.
             </p>
-            <button onClick={() => setStep(1)} className="mt-8 w-full bg-[var(--color-ink)] text-white rounded-xl py-3 font-medium">
+            <button onClick={() => setStep(1)} className="mt-8 w-full bg-[var(--color-ink)] text-[var(--color-bg)] rounded-[var(--radius-md)] py-3 font-medium transition-transform active:scale-[.99]">
               Start
             </button>
           </div>
@@ -72,7 +77,7 @@ export function OnboardingFlow() {
             />
             <div className="flex gap-2 mt-4">
               <button onClick={() => setStep(0)} className="px-4 py-3 rounded-xl text-[var(--color-ink-soft)]">Back</button>
-              <button onClick={() => setStep(2)} disabled={innerNames.length === 0} className="flex-1 bg-[var(--color-ink)] text-white rounded-xl py-3 font-medium disabled:opacity-30">
+              <button onClick={() => setStep(2)} disabled={innerNames.length === 0} className="flex-1 bg-[var(--color-ink)] text-[var(--color-bg)] rounded-[var(--radius-md)] py-3 font-medium transition-transform active:scale-[.99] disabled:opacity-30">
                 Next
               </button>
             </div>
@@ -93,7 +98,7 @@ export function OnboardingFlow() {
             />
             <div className="flex gap-2 mt-4">
               <button onClick={() => setStep(1)} className="px-4 py-3 rounded-xl text-[var(--color-ink-soft)]">Back</button>
-              <button onClick={() => setStep(3)} className="flex-1 bg-[var(--color-ink)] text-white rounded-xl py-3 font-medium">
+              <button onClick={() => setStep(3)} className="flex-1 bg-[var(--color-ink)] text-[var(--color-bg)] rounded-[var(--radius-md)] py-3 font-medium transition-transform active:scale-[.99]">
                 Next
               </button>
             </div>
@@ -121,7 +126,7 @@ export function OnboardingFlow() {
             </div>
             <div className="flex gap-2 mt-4">
               <button onClick={() => setStep(2)} className="px-4 py-3 rounded-xl text-[var(--color-ink-soft)]">Back</button>
-              <button onClick={() => setStep(4)} className="flex-1 bg-[var(--color-ink)] text-white rounded-xl py-3 font-medium">
+              <button onClick={() => setStep(4)} className="flex-1 bg-[var(--color-ink)] text-[var(--color-bg)] rounded-[var(--radius-md)] py-3 font-medium transition-transform active:scale-[.99]">
                 Next
               </button>
             </div>
@@ -140,7 +145,7 @@ export function OnboardingFlow() {
             <p className="mt-3 text-[var(--color-ink-soft)]">
               Tip: after your next chat with anyone, jot one line so future-you has something real to lead with.
             </p>
-            <button onClick={finish} disabled={saving} className="mt-8 w-full bg-[var(--color-ink)] text-white rounded-xl py-3 font-medium disabled:opacity-30">
+            <button onClick={finish} disabled={saving} className="mt-8 w-full bg-[var(--color-ink)] text-[var(--color-bg)] rounded-[var(--radius-md)] py-3 font-medium transition-transform active:scale-[.99] disabled:opacity-30">
               {saving ? 'Setting up…' : 'Open the app'}
             </button>
           </div>

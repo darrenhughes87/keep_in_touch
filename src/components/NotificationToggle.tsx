@@ -165,7 +165,7 @@ export function NotificationToggle() {
         <button
           type="button"
           onClick={installSw}
-          className="px-3 py-1.5 rounded-full text-xs font-medium bg-stone-100 text-[var(--color-ink-soft)]"
+          className="px-3 py-1.5 rounded-full text-xs font-medium bg-[var(--color-bg-sunken)] text-[var(--color-ink-soft)]"
         >
           {reason ? 'Try again' : 'Install background service'}
         </button>
@@ -187,7 +187,7 @@ export function NotificationToggle() {
         className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium ${
           state === 'on'
             ? 'bg-[var(--color-good)] text-white'
-            : 'bg-stone-100 text-[var(--color-ink-soft)]'
+            : 'bg-[var(--color-bg-sunken)] text-[var(--color-ink-soft)]'
         }`}
       >
         {state === 'busy' ? '…' : state === 'on' ? 'On' : 'Turn on'}

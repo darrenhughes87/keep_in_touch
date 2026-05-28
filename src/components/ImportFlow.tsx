@@ -52,14 +52,19 @@ export function ImportFlow() {
   return (
     <div className="space-y-4 mt-2">
       {contacts.length === 0 && (
-        <div className="bg-[var(--color-bg-card)] border border-[var(--color-line)] rounded-xl p-6 text-center">
+        <div className="rounded-[var(--radius-card)] border border-dashed border-[var(--color-line)] bg-[var(--color-bg-card)] p-6 text-center shadow-[var(--shadow-card)]">
+          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-accent-soft)] text-[var(--color-accent-ink)]">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden>
+              <path d="M12 15V4m0 0L8.5 7.5M12 4l3.5 3.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
           <p className="text-sm text-[var(--color-ink-soft)]">
             Upload a .vcf file exported from your phone contacts.
           </p>
-          <p className="text-xs text-[var(--color-ink-faint)] mt-2">
+          <p className="mt-2 text-xs text-[var(--color-ink-faint)]">
             On Android: Contacts app → ⋮ → Share / Export → .vcf
           </p>
-          <input type="file" accept=".vcf,text/vcard" onChange={onFile} className="block mx-auto mt-4 text-sm" />
+          <input type="file" accept=".vcf,text/vcard" onChange={onFile} className="mx-auto mt-4 block text-sm" />
         </div>
       )}
 
@@ -72,7 +77,7 @@ export function ImportFlow() {
 
           <div>
             <label className="text-xs uppercase tracking-wider text-[var(--color-ink-faint)]">Starting layer</label>
-            <select value={layer} onChange={e => setLayer(e.target.value as Layer)} className="w-full mt-1 px-3 py-2 rounded-lg border border-[var(--color-line)] bg-white">
+            <select value={layer} onChange={e => setLayer(e.target.value as Layer)} className="select mt-1">
               <option value="acquaintance">Acquaintance (recommended — sort later)</option>
               <option value="good">Good friend</option>
               <option value="close">Close friend</option>
@@ -83,14 +88,14 @@ export function ImportFlow() {
             </p>
           </div>
 
-          <ul className="space-y-1 max-h-[50vh] overflow-y-auto">
+          <ul className="max-h-[50vh] overflow-hidden overflow-y-auto rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-bg-card)] shadow-[var(--shadow-card)] divide-y divide-[var(--color-line-soft)]">
             {contacts.map((c, i) => (
               <li key={i}>
-                <label className="flex items-center gap-3 py-2 px-2 rounded-xl">
-                  <input type="checkbox" checked={selected.has(i)} onChange={() => toggle(i)} />
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{c.name}</div>
-                    <div className="text-xs text-[var(--color-ink-faint)] truncate">
+                <label className="flex items-center gap-3 px-3.5 py-3 active:bg-[var(--color-bg-sunken)] transition-colors">
+                  <input type="checkbox" checked={selected.has(i)} onChange={() => toggle(i)} className="h-4 w-4 accent-[var(--color-accent)]" />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-medium">{c.name}</div>
+                    <div className="truncate text-xs text-[var(--color-ink-faint)]">
                       {c.phone || c.email || '—'}
                     </div>
                   </div>
@@ -99,7 +104,7 @@ export function ImportFlow() {
             ))}
           </ul>
 
-          <button onClick={confirm} disabled={selected.size === 0 || saving} className="w-full bg-[var(--color-ink)] text-white rounded-xl py-3 font-medium disabled:opacity-30">
+          <button onClick={confirm} disabled={selected.size === 0 || saving} className="w-full rounded-[var(--radius-md)] bg-[var(--color-ink)] py-3 font-medium text-[var(--color-bg)] transition-transform active:scale-[.99] disabled:opacity-30">
             {saving ? 'Importing…' : `Add ${selected.size}`}
           </button>
         </>
