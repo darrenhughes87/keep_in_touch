@@ -270,41 +270,78 @@ export function lastContact(personId: number): string | null {
 }
 
 // Suggestions
+// Refreshes the suggestion list for `forDate`. This is a queue, not a daily
+// snapshot: anyone you haven't acted on rolls forward to today instead of
+// being wiped, so the list GROWS while you ignore it and shrinks only when you
+// contact someone (which pushes them past their cadence) or dismiss them.
+//
+//  - "due" = past their cadence (drift >= 1), per scoring.ts.
+//  - A person you contacted drops off until a full cadence passes again.
+//  - Each day introduces at most `max_suggestions_per_day` NEW names; the
+//    carried-over backlog is never capped, so a skipped day makes the list
+//    bigger the next day rather than resetting it.
+//  - Quiet days add no new names, but the existing backlog still stands.
 export function computeSuggestionsFor(forDate: string): DailySuggestion[] {
   const db = getDb();
   const s = getSettings();
 
-  // wipe any prior suggestions for this date so re-run is safe
-  db.prepare('DELETE FROM daily_suggestions WHERE for_date = ?').run(forDate);
-
-  if (isQuietDay(s.quiet_days)) {
-    return [];
-  }
-
   const people = db.prepare(`SELECT * FROM people WHERE archived_at IS NULL`).all() as Person[];
 
-  const scored = people.map(p => {
-    const last = lastContact(p.id);
-    const sc = score({
+  // Everyone currently due, strongest drift first.
+  const due = people.map(p => ({
+    person: p,
+    score: score({
       layer: p.layer,
       cadence_days: p.cadence_days,
-      last_contact: last,
+      last_contact: lastContact(p.id),
       snoozed_until: p.snoozed_until,
       birthday: p.birthday,
       birthday_remind: p.birthday_remind,
       starred: p.starred,
-    });
-    return { person: p, score: sc };
-  }).filter(x => x.score > 0).sort((a, b) => b.score - a.score);
+    }),
+  })).filter(x => x.score > 0).sort((a, b) => b.score - a.score);
 
-  const max = s.max_suggestions_per_day;
-  const top = scored.slice(0, max);
+  const scoreById = new Map(due.map(d => [d.person.id, d.score] as const));
 
-  const insert = db.prepare(`
-    INSERT INTO daily_suggestions (for_date, person_id, rank, score)
-    VALUES (?, ?, ?, ?)
-  `);
-  top.forEach((t, i) => insert.run(forDate, t.person.id, i + 1, t.score));
+  // All still-open (un-acted, un-dismissed) suggestion rows, from any date.
+  const open = db.prepare(`
+    SELECT * FROM daily_suggestions WHERE acted_at IS NULL AND dismissed_at IS NULL
+  `).all() as DailySuggestion[];
+
+  const dropStale = db.prepare('DELETE FROM daily_suggestions WHERE id = ?');
+  const roll = db.prepare('UPDATE daily_suggestions SET for_date = ?, score = ? WHERE id = ?');
+  const carried = new Set<number>();
+
+  for (const row of open) {
+    if (!scoreById.has(row.person_id)) {
+      // No longer due (contacted, snoozed, starred, archived) → leave the list.
+      dropStale.run(row.id);
+      continue;
+    }
+    // Still due → carry forward to today with a refreshed score.
+    roll.run(forDate, scoreById.get(row.person_id)!, row.id);
+    carried.add(row.person_id);
+  }
+
+  // Introduce up to N brand-new names (not on a quiet day).
+  if (!isQuietDay(s.quiet_days)) {
+    const insert = db.prepare(`
+      INSERT OR IGNORE INTO daily_suggestions (for_date, person_id, rank, score)
+      VALUES (?, ?, ?, ?)
+    `);
+    due.filter(d => !carried.has(d.person.id))
+      .slice(0, s.max_suggestions_per_day)
+      .forEach(f => insert.run(forDate, f.person.id, 0, f.score));
+  }
+
+  // Re-rank today's open list by score so the home screen ordering is stable.
+  const todays = db.prepare(`
+    SELECT id FROM daily_suggestions
+    WHERE for_date = ? AND acted_at IS NULL AND dismissed_at IS NULL
+    ORDER BY score DESC, id ASC
+  `).all(forDate) as Array<{ id: number }>;
+  const setRank = db.prepare('UPDATE daily_suggestions SET rank = ? WHERE id = ?');
+  todays.forEach((r, i) => setRank.run(i + 1, r.id));
 
   return getSuggestions(forDate);
 }

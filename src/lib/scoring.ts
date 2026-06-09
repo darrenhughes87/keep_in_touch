@@ -27,10 +27,17 @@ export function score(p: ScoreInput): number {
   const weight = LAYER_WEIGHTS[p.layer];
 
   let bday = 0;
+  let birthdayImminent = false;
   if (p.birthday_remind) {
     const d = daysUntilBirthday(p.birthday);
-    if (d !== null && d <= 7) bday = 0.5;
+    if (d !== null && d <= 7) { bday = 0.5; birthdayImminent = true; }
   }
+
+  // Not yet due. Once you've logged contact, a person stays hidden until a
+  // full cadence has passed (drift >= 1). This is what makes quiet days
+  // possible: if nobody is past their cadence, nobody surfaces. A birthday
+  // within the week is the one thing that still surfaces someone early.
+  if (drift < 1 && !birthdayImminent) return 0;
 
   return drift * weight * (1 + bday);
 }

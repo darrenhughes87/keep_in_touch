@@ -6,8 +6,9 @@
 // regardless. Useful for verifying the pipeline without waiting until 08:30.
 
 import { NextResponse } from 'next/server';
-import { getOrComputeSuggestions } from '@/lib/queries';
+import { getOrComputeSuggestions, getSettings } from '@/lib/queries';
 import { sendToAll } from '@/lib/push';
+import { isQuietDay } from '@/lib/time';
 
 export async function POST(req: Request) {
   const auth = req.headers.get('authorization');
@@ -18,6 +19,11 @@ export async function POST(req: Request) {
 
   const url = new URL(req.url);
   const isTest = url.searchParams.get('test') === '1';
+
+  // On a configured quiet day, stay silent even if a backlog has carried over.
+  if (!isTest && isQuietDay(getSettings().quiet_days)) {
+    return NextResponse.json({ sent: 0, reason: 'quiet day, no push' });
+  }
 
   const suggestions = getOrComputeSuggestions();
   if (suggestions.length === 0 && !isTest) {
