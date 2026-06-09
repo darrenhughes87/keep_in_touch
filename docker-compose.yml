@@ -26,7 +26,11 @@ services:
     labels:
       com.centurylinklabs.watchtower.enable: "true"
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3100/api/health"]
+      # Use 127.0.0.1, not localhost: inside the container localhost resolves
+      # to ::1 (IPv6) first, but next-server binds 0.0.0.0 (IPv4 only), so a
+      # localhost probe gets "connection refused" and the container is wrongly
+      # marked unhealthy. 127.0.0.1 forces IPv4.
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3100/api/health"]
       interval: 30s
       timeout: 5s
       retries: 3
